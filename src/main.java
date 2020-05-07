@@ -1,3 +1,5 @@
+import java.io.File;
+
 /*******************************************************************************
  * Copyright © 2020 Pourya Gohari
  * Written by Pourya Gohari (Email: gohary@ce.sharif.edu)
@@ -15,6 +17,8 @@
  * limitations under the License.
  *******************************************************************************/
 public class main {
+    //The system-dependent path-separator character
+    static String pathSeparator= File.separator;
     public static void main(String[] args) {
         //Graph Deadline
         int deadline;
@@ -24,6 +28,34 @@ public class main {
         boolean create_dag = true;
         //Number of DAG
         int n_DAGs = 50;
+        //MC-DAG
+        McDAG dag;
+        //Dag XML Name
+        String xml_name = "1";
+        //Reliability File Name
+        String rel_name = "rel";
+        //Fault Rate Spec.
+        double landa0 = 0.000000001;
+        int d = 3;
+        //Number Of Overrun
+        int n_overrun = 0;
+        //Number Of Fault
+        int n_fault = 0;
+
+        double percent[] = {0.0, 0.20, 0.40, 0.60, 0.80, 1.0};
+        double overrun_percent = 0.0;
+        double fault_pecent = 0.0;
+
+        McDAG All_DAG[] = new McDAG[n_DAGs + 1];
+        int All_deadline[] = new int[n_DAGs + 1];
+
+        //HotSpot location and information
+        String hotspot_path="HotSpot"+pathSeparator+"hotspot";
+        String hotspot_config="HotSpot"+pathSeparator+"configs"+pathSeparator+"hotspot_4.config";
+        String floorplan="HotSpot"+pathSeparator+"floorplans"+pathSeparator+"Alpha4.flp";
+        String powertrace="HotSpot"+pathSeparator+"powertrace"+pathSeparator+"Alpha4.ptrace";
+        String thermaltrace;
+
 
 
     }
