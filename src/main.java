@@ -1,3 +1,5 @@
+import org.apache.commons.cli.*;
+
 import java.io.File;
 
 /*******************************************************************************
@@ -19,7 +21,35 @@ import java.io.File;
 public class main {
     //The system-dependent path-separator character
     static String pathSeparator= File.separator;
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
+
+        // --> Command-line Args
+        boolean VERBOSE=false;
+
+
+        Options options = new Options();
+        Option verbose = new Option("v", "verbose", false, "Echo all output.");
+        verbose.setRequired(false);
+        options.addOption(verbose);
+
+        CommandLineParser parser = new DefaultParser();
+        HelpFormatter formatter = new HelpFormatter();
+        CommandLine cmd = null;
+
+        try {
+            cmd = parser.parse(options, args);
+        } catch (ParseException e) {
+            System.out.println(e.getMessage());
+            formatter.printHelp("utility-name", options);
+
+            System.exit(1);
+        }
+
+        if(cmd.hasOption("v")) VERBOSE = true;
+
+
+
+
         //Graph Deadline
         int deadline;
         //Number of system cores
@@ -54,8 +84,10 @@ public class main {
         String hotspot_config="HotSpot"+pathSeparator+"configs"+pathSeparator+"hotspot_4.config";
         String floorplan="HotSpot"+pathSeparator+"floorplans"+pathSeparator+"Alpha4.flp";
         String powertrace="HotSpot"+pathSeparator+"powertrace"+pathSeparator+"Alpha4.ptrace";
-        String thermaltrace;
+        String thermaltrace="HotSpot"+pathSeparator+"thermaltrace"+pathSeparator+"thermal.ttrace";;
 
+        HotSpot hotSpot=new HotSpot(hotspot_path,VERBOSE);
+        hotSpot.run(hotspot_config,floorplan,powertrace,thermaltrace);
 
 
     }
