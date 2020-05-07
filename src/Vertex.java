@@ -87,7 +87,7 @@ public abstract class Vertex implements Comparable<Vertex>, Cloneable, Serializa
 			return false;
 	}
 	
-	
+
 	
 	/**
 	 * Calculates the critical Path from a given node
