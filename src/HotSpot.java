@@ -2,6 +2,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.time.Duration;
+import java.time.Instant;
 
 public class HotSpot {
     String command = "";
@@ -15,11 +17,14 @@ public class HotSpot {
     String model_type = " -model_type grid";
     String thermaltrace = " -o ";
 
-    boolean VERBOSE=false;
+    char[] progress = new char[]{'|', '/', '-', '\\'};
+
+
+    boolean VERBOSE = false;
 
     public HotSpot(String hotspot_path, boolean VERBOSE) {
         this.hotspot_path += hotspot_path;
-        this.VERBOSE=VERBOSE;
+        this.VERBOSE = VERBOSE;
     }
 
     public void run(String hotspot_config, String floorplan, String powertrace, String thermaltrace) {
@@ -31,23 +36,45 @@ public class HotSpot {
         Runtime runtime = Runtime.getRuntime();
 //        String[] s = new String[] {hotspot_path , command};
         try {
-            Process process=runtime.exec(command);
+            Instant start = Instant.now();
+            Process process = runtime.exec(command);
 
-            if(VERBOSE) {
-                InputStream stderr = process.getInputStream();
-                InputStreamReader isr = new InputStreamReader(stderr);
-                BufferedReader br = new BufferedReader(isr);
-                String line = null;
-                System.out.println("< HotSpot >");
-                while ((line = br.readLine()) != null)
-                    System.out.println(line);
-                System.out.println("</ HotSpot >");
+
+            InputStream stderr = process.getInputStream();
+            InputStreamReader isr = new InputStreamReader(stderr);
+            BufferedReader br = new BufferedReader(isr);
+            String line = null;
+            int i = 0;
+            while ((line = br.readLine()) != null) {
+                if (VERBOSE) System.out.println(line);
+                else {
+                    System.out.print("Processing HotSpot : " +  progressbar(i) + "\r");
+                    i++;
+                }
             }
+            if (!VERBOSE)System.out.println();
+
+
             int exitVal = process.waitFor();
-            System.out.println("Process exitValue: " + exitVal);
+            Instant finish = Instant.now();
+            long timeElapsed = Duration.between(start, finish).toMillis();
+            System.out.println("[HotSpot Completed! -- Time Elapsed: " + timeElapsed +" ms]");
+            //System.out.println("Process exitValue: " + exitVal);
 
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public String progressbar(int i){
+        String progress="[";
+        i= i%20;
+        for (int j = 0; j < 20; j++) {
+            if(j==i) progress += ">";
+            else if (j<i) progress += "=";
+            else progress += "-";
+        }
+        progress +="]";
+        return progress;
     }
 }

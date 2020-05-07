@@ -1,7 +1,6 @@
 import org.apache.commons.cli.*;
 
 import java.io.File;
-
 /*******************************************************************************
  * Copyright © 2020 Pourya Gohari
  * Written by Pourya Gohari (Email: gohary@ce.sharif.edu)
@@ -20,17 +19,22 @@ import java.io.File;
  *******************************************************************************/
 public class main {
     //The system-dependent path-separator character
-    static String pathSeparator= File.separator;
+    static String pathSeparator = File.separator;
+
     public static void main(String[] args) throws Exception {
 
         // --> Command-line Args
-        boolean VERBOSE=false;
+        boolean VERBOSE = false;
 
 
         Options options = new Options();
         Option verbose = new Option("v", "verbose", false, "Echo all output.");
         verbose.setRequired(false);
         options.addOption(verbose);
+
+        Option help = new Option("h", "help", false, "Help.");
+        verbose.setRequired(false);
+        options.addOption(help);
 
         CommandLineParser parser = new DefaultParser();
         HelpFormatter formatter = new HelpFormatter();
@@ -40,14 +44,16 @@ public class main {
             cmd = parser.parse(options, args);
         } catch (ParseException e) {
             System.out.println(e.getMessage());
-            formatter.printHelp("utility-name", options);
+            formatter.printHelp("Mixed-Criticality Thermal-Balancing", options);
 
             System.exit(1);
         }
 
-        if(cmd.hasOption("v")) VERBOSE = true;
-
-
+        if (cmd.hasOption("v")) VERBOSE = true;
+        if (cmd.hasOption("h")) {
+            formatter.printHelp("Mixed-Criticality Thermal-Balancing", options);
+            System.exit(1);
+        }
 
 
         //Graph Deadline
@@ -80,14 +86,15 @@ public class main {
         int All_deadline[] = new int[n_DAGs + 1];
 
         //HotSpot location and information
-        String hotspot_path="HotSpot"+pathSeparator+"hotspot";
-        String hotspot_config="HotSpot"+pathSeparator+"configs"+pathSeparator+"hotspot_4.config";
-        String floorplan="HotSpot"+pathSeparator+"floorplans"+pathSeparator+"Alpha4.flp";
-        String powertrace="HotSpot"+pathSeparator+"powertrace"+pathSeparator+"Alpha4.ptrace";
-        String thermaltrace="HotSpot"+pathSeparator+"thermaltrace"+pathSeparator+"thermal.ttrace";;
+        String hotspot_path = "HotSpot" + pathSeparator + "hotspot";
+        String hotspot_config = "HotSpot" + pathSeparator + "configs" + pathSeparator + "hotspot_4.config";
+        String floorplan = "HotSpot" + pathSeparator + "floorplans" + pathSeparator + "Alpha4.flp";
+        String powertrace = "HotSpot" + pathSeparator + "powertrace" + pathSeparator + "Alpha4.ptrace";
+        String thermaltrace = "HotSpot" + pathSeparator + "thermaltrace" + pathSeparator + "thermal.ttrace";
+        ;
 
-        HotSpot hotSpot=new HotSpot(hotspot_path,VERBOSE);
-        hotSpot.run(hotspot_config,floorplan,powertrace,thermaltrace);
+        HotSpot hotSpot = new HotSpot(hotspot_path, VERBOSE);
+        hotSpot.run(hotspot_config, floorplan, powertrace, thermaltrace);
 
 
     }
