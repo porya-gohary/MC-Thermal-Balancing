@@ -1,6 +1,7 @@
 import org.apache.commons.cli.*;
 
 import java.io.File;
+
 /*******************************************************************************
  * Copyright © 2020 Pourya Gohari
  * Written by Pourya Gohari (Email: gohary@ce.sharif.edu)
@@ -71,7 +72,7 @@ public class main {
         //Reliability File Name
         String rel_name = "rel";
         //Fault Rate Spec.
-        double landa0 = 0.000000001;
+        double landa0 = 0.00001;
         int d = 3;
         //Number Of Overrun
         int n_overrun = 0;
@@ -84,6 +85,20 @@ public class main {
 
         McDAG All_DAG[] = new McDAG[n_DAGs + 1];
         int All_deadline[] = new int[n_DAGs + 1];
+
+        //Scheduling Results:
+        int PR_Sch;
+
+        // Power Results
+        double Pro_power[] = new double[2];
+
+        //Boolean for Run Each Method
+        boolean Pro_run = false;
+
+        //Benchmarks Name
+        String benchmark[] = {"Blackscholes1", "Blackscholes2", "Blackscholes3", "Bodytrack1", "Bodytrack2", "Canneal1", "Dedup1", "Ferret1", "Ferret2", "Fluidanimate1", "Fluidanimate2", "Freqmine1", "Freqmine2", "Streamcluster1", "Streamcluster2", "Swaptions1", "Swaptions2", "x264"};
+        int benchmark_time[] = {40, 30, 50, 20, 50, 60, 100, 50, 70, 65, 100, 35, 80, 45, 85, 30, 20, 100};
+
 
         //HotSpot location and information
         String hotspot_path = "HotSpot" + pathSeparator + "hotspot";
