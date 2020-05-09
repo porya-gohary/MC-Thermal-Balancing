@@ -40,16 +40,20 @@ public class Reliability_cal {
     double rou_min;
     //All possible Freq
     int[] freq;
-    //Execution Time
-    double t_i;
+    //Execution Time LO
+    double t_i_LO;
+    //Execution Time HI
+    double t_i_HI;
     //minimum Reliability For each Task
     File Rel;
     ArrayList<Double> rel_f;
     //Minimum Voltage
     double v_min;
 
-    // Minimum Execution Time In Maximum Voltage And Frequency
-    double t_min;
+    // Minimum Execution Time In Maximum Voltage And Frequency (LO)
+    double t_min_LO;
+    // Minimum Execution Time In Maximum Voltage And Frequency (HI)
+    double t_min_HI;
 
     // All possible Voltage
     double[] v;
@@ -67,8 +71,8 @@ public class Reliability_cal {
 
     String v_name;
 
-    double R_CNMR = 0;
-    double R_MEDINA = 0;
+    //probability of making an incorrect decision during the acceptance test
+    double alpha = 0;
 
 
     public Reliability_cal(double n, double landa0, double d, double v_max, double v_min, File rel, double[] v, int[] freq, McDAG dag) {
@@ -116,46 +120,41 @@ public class Reliability_cal {
         }
     }
 
-    public void cal() throws Exception {
+    public void cal(String Task_name) throws Exception {
+        Vertex task = dag.getNodebyName(Task_name);
+        t_min_LO = task.getWcet(0);
+        t_min_HI = task.getWcet(1);
+
         rou_min = v_min / v_max;
 
-        for (int i = 0; i < v.length; i++) {
-            v_i = v[i];
 
-            rou = v_i / v_max;
-            t_i = t_min * freq[freq.length - 1] / freq[i];
-            landa = (landa0 * pow(10, ((d * (1 - rou)) / (1 - rou_min))));
-            landa = (-1) * landa;
-            double r = exp((landa * t_i));
+        v_i = v[v.length - 1];
 
+        rou = v_i / v_max;
+        t_i_LO = t_min_LO * freq[freq.length - 1] / freq[freq.length - 1];
+        t_i_HI = t_min_HI * freq[freq.length - 1] / freq[freq.length - 1];
 
+        landa = (landa0 * pow(10, ((d * (1 - rou)) / (1 - rou_min))));
+        landa = (-1) * landa;
 
+        // PoF LO
+        double r_LO = exp((landa * t_i_LO));
+        r_LO = (1 - alpha) * r_LO;
+        double PoF_LO = 1 - r_LO;
 
-        }
-        System.err.println(v_name + " Reliability ⚠ ⚠ Infeasible!");
-        //System.out.println("Core  "+core_number+"  Time "+time);
-        throw new Exception("Infeasible!");
+        // PoF HI
+        double r_HI = exp((landa * t_i_HI));
+        r_LO = (1 - alpha) * r_HI;
+        double PoF_HI = 1 - r_HI;
+
+        //Calculate minimum Number of Replica
+        int replica_lower_bound = (int) ceil(log((1 - task.getReliability()) / PoF_HI) / log(PoF_LO));
+        //Calculate maximum Number of Replica
+        int replica_upper_bound = (int) ceil(log((1 - task.getReliability()) / PoF_HI) / log(PoF_HI));
+
+        System.out.println("Reliability = " + task.getReliability() + "  [" + replica_lower_bound + " , " + replica_upper_bound + " ]");
 
     }
 
-    //Simple Function For Calculating Combination of Two Number
-    private int combinations(int n, int k) {
-        return (factorial(n) / (factorial(k) * factorial(n - k)));
-    }
 
-    //Function For Calculating Factorial
-    private int factorial(int n) {
-        if (n == 0)
-            return 1;
-        else
-            return (n * factorial(n - 1));
-    }
-
-    public void setV_name(String v_name) {
-        this.v_name = v_name;
-    }
-
-    public void setT_min(double t_min) {
-        this.t_min = t_min;
-    }
 }

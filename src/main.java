@@ -1,6 +1,9 @@
 import org.apache.commons.cli.*;
 
-import java.io.File;
+import java.io.*;
+import java.util.Random;
+
+import static java.lang.Math.pow;
 
 /*******************************************************************************
  * Copyright © 2020 Pourya Gohari
@@ -59,6 +62,12 @@ public class main {
 
         //Graph Deadline
         int deadline;
+        //deadline Coefficient
+        double x = 3;
+
+        //Reliability Coefficient
+        double y = 3;
+
         //Number of system cores
         int n_core;
         //Bool For make New DAGS
@@ -99,6 +108,10 @@ public class main {
         String benchmark[] = {"Blackscholes1", "Blackscholes2", "Blackscholes3", "Bodytrack1", "Bodytrack2", "Canneal1", "Dedup1", "Ferret1", "Ferret2", "Fluidanimate1", "Fluidanimate2", "Freqmine1", "Freqmine2", "Streamcluster1", "Streamcluster2", "Swaptions1", "Swaptions2", "x264"};
         int benchmark_time[] = {40, 30, 50, 20, 50, 60, 100, 50, 70, 65, 100, 35, 80, 45, 85, 30, 20, 100};
 
+        //Possible Voltages
+        double v[] = {1, 1.115, 1.3};
+        //Possible Frequencies
+        int freq[] = {800, 1000, 1200};
 
         //HotSpot location and information
         String hotspot_path = "HotSpot" + pathSeparator + "hotspot";
@@ -106,11 +119,123 @@ public class main {
         String floorplan = "HotSpot" + pathSeparator + "floorplans" + pathSeparator + "Alpha4.flp";
         String powertrace = "HotSpot" + pathSeparator + "powertrace" + pathSeparator + "Alpha4.ptrace";
         String thermaltrace = "HotSpot" + pathSeparator + "thermaltrace" + pathSeparator + "thermal.ttrace";
+
+
+        if (create_dag) {
+            BufferedWriter outputWriter = null;
+            outputWriter = new BufferedWriter(new FileWriter("DAGs_Summary.txt"));
+            for (int i = 1; i <= n_DAGs; i++) {
+                xml_name = i + "";
+                System.out.println("Mapping :::> DAG " + xml_name + "");
+                File file = new File("DAGs//" + xml_name + ".xml");
+                dag_Reader dr = new dag_Reader(file);
+                dag = dr.getDag();
+                dag.setHINodes();
+                benchmark_mapping benchmark_mapping = new benchmark_mapping(dag, benchmark, benchmark_time);
+                benchmark_mapping.mapping();
+                benchmark_mapping.cal_LPL();
+                deadline = benchmark_mapping.cal_deadline(x);
+
+
+                outputWriter.write(">>>>>>>>>> ::: DAG " + xml_name + " ::: <<<<<<<<<<" + "\n");
+                outputWriter.write("Number Of HI-Critical Tasks = " + dag.getNodes_HI().size() + "\n");
+                outputWriter.write("Number Of LO-Critical Tasks = " + (dag.getVertices().size() - dag.getNodes_HI().size()) + "\n");
+                outputWriter.write("Number Of Tasks = " + (dag.getVertices().size()) + "\n");
+                outputWriter.write("Deadline = " + deadline + "\n");
+
+//                benchmark_mapping.debug();
+                All_deadline[i] = deadline;
+                All_DAG[i] = dag;
+                try {
+                    relibility_creator(dag, "rel" + i, y);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            outputWriter.flush();
+            outputWriter.close();
+
+
+            WriteObjectToFile(All_DAG.clone(), "DAGs.txt");
+            WriteObjectToFile(All_deadline, "Deadline.txt");
+
+        } else {
+            All_DAG = (McDAG[]) ReadObjectFromFile("DAGs.txt");
+            All_deadline = (int[]) ReadObjectFromFile("Deadline.txt");
+        }
+
+
+
+//        HotSpot hotSpot = new HotSpot(hotspot_path, VERBOSE);
+//        hotSpot.run(hotspot_config, floorplan, powertrace, thermaltrace);
+
+
+    }
+
+    public static void relibility_creator(McDAG dag, String rel_name, double n) throws IOException {
+        double rel[] = new double[dag.getVertices().size()];
+        for (int i = 0; i < dag.getVertices().size(); i++) {
+            Random rnd = new Random();
+            double t = 0;
+            int a = rnd.nextInt(3);
+            if (a == 0) t = 0.8;
+            else t = 0.9;
+            a = rnd.nextInt((int) n + 3);
+            for (int j = 2; j < a + 1; j++) {
+                t += pow(0.1, j) * 9;
+            }
+            rel[i] = t;
+        }
+
+        BufferedWriter outputWriter = null;
+        outputWriter = new BufferedWriter(new FileWriter(rel_name + ".txt"));
+        for (int j = 0; j < dag.getVertices().size(); j++) {
+            outputWriter.write(rel[j] + "\n");
+        }
         ;
+        outputWriter.flush();
+        outputWriter.close();
 
-        HotSpot hotSpot = new HotSpot(hotspot_path, VERBOSE);
-        hotSpot.run(hotspot_config, floorplan, powertrace, thermaltrace);
+    }
 
+    public static void WriteObjectToFile(Object serObj, String filename) {
+        try {
 
+            FileOutputStream fileOut = new FileOutputStream(filename);
+            ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
+            objectOut.writeObject(serObj);
+            objectOut.flush();
+            objectOut.close();
+            System.out.println("The Object  was succesfully written to a file");
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.exit(4);
+        }
+    }
+
+    public static Object ReadObjectFromFile(String filename) {
+        try {
+            McDAG All_DAG[];
+
+            int d[];
+            FileInputStream fileIn = new FileInputStream(filename);
+            ObjectInputStream objectIn = new ObjectInputStream(fileIn);
+            if (filename == "Deadline.txt") {
+                d = (int[]) objectIn.readObject();
+                System.out.println("The Object  was succesfully Read From a file");
+                return d;
+            } else {
+                All_DAG = (McDAG[]) objectIn.readObject();
+                objectIn.close();
+
+                System.out.println("The Object  was succesfully Read From a file");
+                return All_DAG;
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.exit(4);
+        }
+        return null;
     }
 }
