@@ -56,8 +56,10 @@ public abstract class Vertex implements Comparable<Vertex>, Cloneable, Serializa
 
 	private boolean run =true;
 
+	private int replica=1;
 
-	
+
+
 	public Vertex (int id, String name, int nbLevels) {
 		this.setId(id);
 		this.setName(name);
@@ -443,4 +445,12 @@ public abstract class Vertex implements Comparable<Vertex>, Cloneable, Serializa
     public void setRun(boolean run) {
         this.run = run;
     }
+
+	public int getReplica() {
+		return replica;
+	}
+
+	public void setReplica(int replica) {
+		this.replica = replica;
+	}
 }

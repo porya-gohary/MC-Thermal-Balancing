@@ -66,7 +66,7 @@ public class main {
         double x = 3;
 
         //Reliability Coefficient
-        double y = 3;
+        double y = 7;
 
         //Number of system cores
         int n_core;
@@ -164,7 +164,22 @@ public class main {
             All_deadline = (int[]) ReadObjectFromFile("Deadline.txt");
         }
 
+        for (int i = 1; i <= n_DAGs; i++) {
+            xml_name = i + "";
 
+            dag = All_DAG[i];
+            deadline = All_deadline[i];
+
+            // Print Deadline
+            System.out.println("Deadline= " + deadline);
+
+            File rel = new File(rel_name + xml_name + ".txt");
+            Reliability_cal rc = new Reliability_cal(landa0, d, v[v.length - 1], v[0], rel, v, freq, dag);
+            for (Vertex a : dag.getVertices()) {
+                if(a.isHighCr()) rc.cal(a.getName());
+
+            }
+        }
 
 //        HotSpot hotSpot = new HotSpot(hotspot_path, VERBOSE);
 //        hotSpot.run(hotspot_config, floorplan, powertrace, thermaltrace);
@@ -172,15 +187,13 @@ public class main {
 
     }
 
+
     public static void relibility_creator(McDAG dag, String rel_name, double n) throws IOException {
         double rel[] = new double[dag.getVertices().size()];
         for (int i = 0; i < dag.getVertices().size(); i++) {
             Random rnd = new Random();
-            double t = 0;
-            int a = rnd.nextInt(3);
-            if (a == 0) t = 0.8;
-            else t = 0.9;
-            a = rnd.nextInt((int) n + 3);
+            double t = 0.9;
+            int a = rnd.nextInt((int) n + 3);
             for (int j = 2; j < a + 1; j++) {
                 t += pow(0.1, j) * 9;
             }

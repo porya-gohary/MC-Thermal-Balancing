@@ -45,9 +45,9 @@ public class benchmark_mapping {
         for (int i = dag.getVertices().size()-1; i >= 0; i--) {
             Vertex a=dag.getNodebyName("D0N"+i);
             //System.out.println("D0N"+i);
-            System.out.print(t+"/"+dag.getVertices().size()+"  Calculating LPL: "+a.getName()+" ");
+//            System.out.print(t+"/"+dag.getVertices().size()+"  Calculating LPL: "+a.getName()+" ");
             a.setLPL(LPtoLeaves(a));
-            System.out.println(a.getLPL());
+//            System.out.println(a.getLPL());
             t++;
         }
 

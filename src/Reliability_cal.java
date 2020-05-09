@@ -75,8 +75,8 @@ public class Reliability_cal {
     double alpha = 0;
 
 
-    public Reliability_cal(double n, double landa0, double d, double v_max, double v_min, File rel, double[] v, int[] freq, McDAG dag) {
-        this.n = n;
+    public Reliability_cal(double landa0, double d, double v_max, double v_min, File rel, double[] v, int[] freq, McDAG dag) {
+
         this.landa0 = landa0;
         this.d = d;
 
@@ -142,6 +142,7 @@ public class Reliability_cal {
         r_LO = (1 - alpha) * r_LO;
         double PoF_LO = 1 - r_LO;
 
+
         // PoF HI
         double r_HI = exp((landa * t_i_HI));
         r_LO = (1 - alpha) * r_HI;
@@ -152,7 +153,10 @@ public class Reliability_cal {
         //Calculate maximum Number of Replica
         int replica_upper_bound = (int) ceil(log((1 - task.getReliability()) / PoF_HI) / log(PoF_HI));
 
-        System.out.println("Reliability = " + task.getReliability() + "  [" + replica_lower_bound + " , " + replica_upper_bound + " ]");
+        System.out.println(task.getName() + " Reliability = " + task.getReliability() + " [ " + replica_lower_bound + " , " + replica_upper_bound + " ]");
+
+        //Set Number of Replica  + main task
+        task.setReplica(replica_upper_bound+1);
 
     }
 
