@@ -59,6 +59,8 @@ public class main {
             System.exit(1);
         }
 
+        //Number of system cores
+        int n_core = 4;
 
         //Graph Deadline
         int deadline;
@@ -68,8 +70,6 @@ public class main {
         //Reliability Coefficient
         double y = 7;
 
-        //Number of system cores
-        int n_core;
         //Bool For make New DAGS
         boolean create_dag = true;
         //Number of DAG
@@ -176,10 +176,13 @@ public class main {
             File rel = new File(rel_name + xml_name + ".txt");
             Reliability_cal rc = new Reliability_cal(landa0, d, v[v.length - 1], v[0], rel, v, freq, dag);
             for (Vertex a : dag.getVertices()) {
-                if(a.isHighCr()) rc.cal(a.getName());
+                if (a.isHighCr()) rc.cal(a.getName());
 
             }
         }
+
+        proposedMothod proposedMothod = new proposedMothod(All_deadline[1], n_core, All_DAG[1], "1",VERBOSE);
+
 
 //        HotSpot hotSpot = new HotSpot(hotspot_path, VERBOSE);
 //        hotSpot.run(hotspot_config, floorplan, powertrace, thermaltrace);
