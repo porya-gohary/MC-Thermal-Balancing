@@ -24,13 +24,11 @@ import static java.lang.Math.pow;
 public class main {
     //The system-dependent path-separator character
     static String pathSeparator = File.separator;
+    static boolean VERBOSE = false;
 
     public static void main(String[] args) throws Exception {
 
         // --> Command-line Args
-        boolean VERBOSE = false;
-
-
         Options options = new Options();
         Option verbose = new Option("v", "verbose", false, "Echo all output.");
         verbose.setRequired(false);
@@ -126,9 +124,9 @@ public class main {
             outputWriter = new BufferedWriter(new FileWriter("DAGs_Summary.txt"));
             for (int i = 1; i <= n_DAGs; i++) {
                 xml_name = i + "";
-                System.out.println("Mapping :::> DAG " + xml_name + "");
+                if(VERBOSE) System.out.println("Mapping :::> DAG " + xml_name + "");
                 File file = new File("DAGs//" + xml_name + ".xml");
-                dag_Reader dr = new dag_Reader(file);
+                dag_Reader dr = new dag_Reader(file,VERBOSE);
                 dag = dr.getDag();
                 dag.setHINodes();
                 benchmark_mapping benchmark_mapping = new benchmark_mapping(dag, benchmark, benchmark_time);
@@ -171,10 +169,10 @@ public class main {
             deadline = All_deadline[i];
 
             // Print Deadline
-            System.out.println("Deadline= " + deadline);
+            if(VERBOSE) System.out.println("Deadline= " + deadline);
 
             File rel = new File(rel_name + xml_name + ".txt");
-            Reliability_cal rc = new Reliability_cal(landa0, d, v[v.length - 1], v[0], rel, v, freq, dag);
+            Reliability_cal rc = new Reliability_cal(landa0, d, v[v.length - 1], v[0], rel, v, freq, dag,VERBOSE);
             for (Vertex a : dag.getVertices()) {
                 if (a.isHighCr()) rc.cal(a.getName());
 
@@ -222,7 +220,7 @@ public class main {
             objectOut.writeObject(serObj);
             objectOut.flush();
             objectOut.close();
-            System.out.println("The Object  was succesfully written to a file");
+            if(VERBOSE)System.out.println("The Object was successfully written to a file");
 
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -245,7 +243,7 @@ public class main {
                 All_DAG = (McDAG[]) objectIn.readObject();
                 objectIn.close();
 
-                System.out.println("The Object  was succesfully Read From a file");
+                if(VERBOSE)System.out.println("The Object was successfully Read From a file");
                 return All_DAG;
             }
         } catch (Exception ex) {

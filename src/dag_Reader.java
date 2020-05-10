@@ -49,14 +49,17 @@ public class dag_Reader {
 
     private Set<McDAG> dags;
     private McDAG dag;
+    private boolean VERBOSE;
 
-    public dag_Reader(File input) throws ParserConfigurationException, IOException, SAXException {
+    public dag_Reader(File input, boolean VERBOSE) throws ParserConfigurationException, IOException, SAXException {
 
         xml = input;
         dags = new HashSet<McDAG>();
+        this.VERBOSE=VERBOSE;
         readXML();
         dag = dags.iterator().next();
-        System.out.println("Number Of Tasks in Graph =  "+dag.getVertices().size());
+        if(VERBOSE) {
+            System.out.println("Number Of Tasks in Graph =  " + dag.getVertices().size());
 
 //        for (Vertex a : dag.getVertices()) {
 //            System.out.print(a.getName());
@@ -66,7 +69,7 @@ public class dag_Reader {
 //            }
 //            System.out.println();
 //        }
-        System.out.println("..................");
+            System.out.println("..................");
 
 //        for (Vertex a : dag.getVertices()) {
 //            System.out.print(a.getName());
@@ -75,6 +78,7 @@ public class dag_Reader {
 //
 //
 //        }
+        }
     }
 
 

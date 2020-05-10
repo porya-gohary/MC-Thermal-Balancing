@@ -74,8 +74,11 @@ public class Reliability_cal {
     //probability of making an incorrect decision during the acceptance test
     double alpha = 0;
 
+    //Verbose
+    boolean VERBOSE = false;
 
-    public Reliability_cal(double landa0, double d, double v_max, double v_min, File rel, double[] v, int[] freq, McDAG dag) {
+
+    public Reliability_cal(double landa0, double d, double v_max, double v_min, File rel, double[] v, int[] freq, McDAG dag, boolean VERBOSE) {
 
         this.landa0 = landa0;
         this.d = d;
@@ -87,6 +90,7 @@ public class Reliability_cal {
         this.v = v;
         this.freq = freq;
         this.dag = dag;
+        this.VERBOSE = VERBOSE;
         //cal();
         Read_file();
     }
@@ -153,10 +157,11 @@ public class Reliability_cal {
         //Calculate maximum Number of Replica
         int replica_upper_bound = (int) ceil(log((1 - task.getReliability()) / PoF_HI) / log(PoF_HI));
 
-        System.out.println(task.getName() + " Reliability = " + task.getReliability() + " [ " + replica_lower_bound + " , " + replica_upper_bound + " ]");
+        if (VERBOSE)
+            System.out.println(task.getName() + " Reliability = " + task.getReliability() + " [ " + replica_lower_bound + " , " + replica_upper_bound + " ]");
 
         //Set Number of Replica  + main task
-        task.setReplica(replica_upper_bound+1);
+        task.setReplica(replica_upper_bound + 1);
 
     }
 
