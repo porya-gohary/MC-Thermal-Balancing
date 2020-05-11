@@ -63,13 +63,13 @@ public class main {
         //Graph Deadline
         int deadline;
         //deadline Coefficient
-        double x = 3;
+        double x = 5;
 
         //Reliability Coefficient
         double y = 7;
 
         //Bool For make New DAGS
-        boolean create_dag = false;
+        boolean create_dag = true;
         //Number of DAG
         int n_DAGs = 1;
         //MC-DAG
@@ -178,17 +178,17 @@ public class main {
 
             }
         }
-        ProgressBar progressBar =new ProgressBar();
-        progressBar.start();
-        for (int i = 0; i <= 100; i++) {
-            progressBar.setPercent(i);
-            Thread.sleep(1000);
-        }
-        System.out.println();
-        progressBar.stop();
+//        ProgressBar progressBar =new ProgressBar();
+//        progressBar.start();
+//        for (int i = 0; i <= 100; i++) {
+//            progressBar.setPercent(i);
+//            Thread.sleep(1000);
+//        }
+//        System.out.println();
+//        progressBar.stop();
 
         proposedMothod proposedMothod = new proposedMothod(All_deadline[1], n_core, All_DAG[1], "1", VERBOSE);
-
+        proposedMothod.start();
 //        HotSpot hotSpot = new HotSpot(hotspot_path, VERBOSE);
 //        hotSpot.run(hotspot_config, floorplan, powertrace, thermaltrace);
 

@@ -2,6 +2,22 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 
+/*******************************************************************************
+ * Copyright © 2020 Pourya Gohari
+ * Written by Pourya Gohari (Email: gohary@ce.sharif.edu)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
 public class proposedMothod {
 
     Vertex v[];
@@ -21,41 +37,56 @@ public class proposedMothod {
 
     boolean VERBOSE = false;
 
-    public proposedMothod(int deadline, int n_core, McDAG dag, String xml_name,boolean VERBOSE) {
+    public proposedMothod(int deadline, int n_core, McDAG dag, String xml_name, boolean VERBOSE) {
         this.deadline = deadline;
         this.n_core = n_core;
         this.dag = dag;
         this.xml_name = xml_name;
-        this.VERBOSE=VERBOSE;
+        this.VERBOSE = VERBOSE;
+    }
+
+    public void start() throws Exception {
         //Sort Tasks from big to small by WCET LO
-        sorted_tasks=sort_tasks(dag.getVertices().toArray(new Vertex[0]).clone());
+        sorted_tasks = sort_tasks(dag.getVertices().toArray(new Vertex[0]).clone());
         feasibility();
     }
 
-    public void feasibility(){
+    public void feasibility() throws Exception {
         String Task[];
-        do{
-            Task=get_tasks();
-            if (VERBOSE) System.out.println("-------------");
-            for (int i = 0; i < Task.length; i++) {
-                if(Task[i]==null) continue;
-                Vertex v=dag.getNodebyName(Task[i]);
-                v.setScheduled(v.getScheduled()+1);
-                if (VERBOSE) System.out.println(v.getName()+" SCH: [ " +v.getScheduled()+ " / "+v.getReplica()+" ]  "+v.isDone());
-            }
-        }while(Task[0]!=null);
-    }
-    //Get Tasks for every blocks
-    public String [] get_tasks() {
-        //Make array for tasks in specific blocks
-        String t[]=new String[n_core];
-        Vertex s=null;
-        int k=0;
+        CPU cpu1 = new CPU(deadline, n_core, dag);
         do {
-            s=null;
+            Task = get_tasks(false);
+            if (VERBOSE) System.out.println("-------------");
+            int startTime = (cpu1.Endtime(-1) == 0) ? 0 : cpu1.Endtime(-1) + 1;
+            for (int i = 0; i < Task.length; i++) {
+                if (Task[i] == null) continue;
+                int blockSize = dag.getNodebyName(Task[0]).getWcet(0);
+
+                Vertex v = dag.getNodebyName(Task[i]);
+                cpu1.SetTaskOnCore(v.getName() + " CR" + (v.getScheduled() + 1), i, startTime + (blockSize - v.getWcet(0)), startTime + blockSize - 1);
+                cpu1.SetTaskOnCore(v.getName() + " CO" + (v.getScheduled() + 1), i, startTime + blockSize, startTime + blockSize + v.getWcet(1) - 1);
+                v.setScheduled(v.getScheduled() + 1);
+
+                if (VERBOSE)
+                    System.out.println(v.getName() + " SCH: [ " + v.getScheduled() + " / " + v.getReplica() + " ]  " + v.isDone());
+            }
+        } while (Task[0] != null);
+
+        cpu1.debug("TEST");
+    }
+
+    //Get Tasks for every blocks
+    public String[] get_tasks(boolean LO) {
+        //Make array for tasks in specific blocks
+        String t[] = new String[n_core];
+        Vertex s = null;
+        int k = 0;
+        do {
+            s = null;
             for (Vertex a : sorted_tasks) {
+                if (!a.isHighCr()) continue;
                 boolean run_flag = true;
-                if(a.isDone()) continue;
+                if (a.isDone()) continue;
                 for (Edge e : a.getRcvEdges()) {
                     if (!e.getSrc().isDone()) {
                         run_flag = false;
@@ -63,16 +94,16 @@ public class proposedMothod {
                     }
                 }
                 if (!run_flag) continue;
-                //Check for number of a task in the block
-                else if(countOccurrences(t,a.getName())+a.getScheduled()+1 > a.getReplica()) continue;
+                    //Check for number of a task in the block
+                else if (countOccurrences(t, a.getName()) + a.getScheduled() + 1 > a.getReplica()) continue;
                 else {
-                    s=a;
-                    t[k]=s.getName();
+                    s = a;
+                    t[k] = s.getName();
                     k++;
-                    if(k==4) break;
+                    if (k == 4) break;
                 }
             }
-        }while(k!=4 && s!=null);
+        } while (k != 4 && s != null);
         return t;
     }
 
@@ -93,10 +124,10 @@ public class proposedMothod {
         return v;
     }
 
-    public int countOccurrences(String arr[], String x){
-        int n=0;
+    public int countOccurrences(String arr[], String x) {
+        int n = 0;
         for (int i = 0; i < arr.length; i++) {
-            if(arr[i]==x) n++;
+            if (arr[i] == x) n++;
         }
         return n;
     }

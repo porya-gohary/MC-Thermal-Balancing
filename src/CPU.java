@@ -42,7 +42,7 @@ public class CPU {
 
     //Location of Power Trace
     String pathSeparator = File.separator;
-    String location = "Benchmark"+pathSeparator;
+    String location = "Benchmark" + pathSeparator;
     //Number of Redundancy
     double n = 3;
 
@@ -121,10 +121,6 @@ public class CPU {
 
         // For Not Mapping Power for Safe Start Time Class
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-        //System.out.println(stackTraceElements[2].getClassName());
-//        for (StackTraceElement s : stackTraceElements) {
-//            System.out.println(s.getMethodName());
-//        }
         if (!stackTraceElements[2].getClassName().equals("Safe_Start_Time") && !stackTraceElements[2].getMethodName().equals("feasibility")) {
             try {
                 this.setPower(Task, Start, Core);
@@ -456,14 +452,29 @@ public class CPU {
     }
 
     //a function for determine end time in each core
+    // if core == -1 then it get biggest end time of cores
     public int Endtime(int core) {
-        for (int i = deadline - 1; i >= 0; i--) {
-            if (this.getRunningTask(core, i) != null) {
-                return i;
+        if (core == -1) {
+            int temp = 0;
+            for (int i = 0; i < n_Cores; i++) {
+                for (int j = deadline - 1; j >= 0; j--) {
+                    if (this.getRunningTask(i, j) != null) {
+                        if (j > temp) temp = j;
+                    }
+                }
+            }
+            return temp;
+
+        } else {
+            for (int i = deadline - 1; i >= 0; i--) {
+                if (this.getRunningTask(core, i) != null) {
+                    return i;
+                }
             }
         }
         return 0;
     }
+
 
     public void SetTask(int core_number, int time, String task) throws Exception {
         try {

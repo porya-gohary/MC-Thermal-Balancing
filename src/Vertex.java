@@ -39,7 +39,7 @@ public abstract class Vertex implements Comparable<Vertex>, Cloneable, Serializa
 	private int LPL;
 	private Double reliability;
 	private Double min_voltage;
-	private int min_freq;
+	private int min_freq ;
 	private int TSP_Active;
 	//Safe Start Time
 	private int SST;
