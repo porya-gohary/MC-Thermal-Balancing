@@ -178,9 +178,16 @@ public class main {
 
             }
         }
+        ProgressBar progressBar =new ProgressBar();
+        progressBar.start();
+        for (int i = 0; i <= 100; i++) {
+            progressBar.setPercent(i);
+            Thread.sleep(1000);
+        }
+        System.out.println();
+        progressBar.stop();
 
         proposedMothod proposedMothod = new proposedMothod(All_deadline[1], n_core, All_DAG[1], "1", VERBOSE);
-
 
 //        HotSpot hotSpot = new HotSpot(hotspot_path, VERBOSE);
 //        hotSpot.run(hotspot_config, floorplan, powertrace, thermaltrace);
