@@ -33,12 +33,15 @@ public class CPU {
     //MC-DAG
     McDAG mcDAG;
 
+    //VERBOSE
+    boolean VERBOSE = false;
+
     //Idle Power
     double idle_power = 3;
 
 
     //Max. Freq.
-    int max_freq = 2000;
+    int max_freq = 1200;
 
     //Location of Power Trace
     String pathSeparator = File.separator;
@@ -52,6 +55,7 @@ public class CPU {
         this.deadline = deadline;
         this.n_Cores = n_Cores;
         this.mcDAG = mcDAG;
+
         core = new String[n_Cores][deadline];
         power = new double[n_Cores][deadline];
         for (int i = 0; i < n_Cores; i++) {
@@ -59,11 +63,24 @@ public class CPU {
         }
     }
 
-    public CPU(int deadline, int n_Cores, McDAG mcDAG, double n, int max_freq_cores) {
+    public CPU(int deadline, int n_Cores, McDAG mcDAG, boolean VERBOSE) {
+        this.deadline = deadline;
+        this.n_Cores = n_Cores;
+        this.mcDAG = mcDAG;
+        this.VERBOSE = VERBOSE;
+        core = new String[n_Cores][deadline];
+        power = new double[n_Cores][deadline];
+        for (int i = 0; i < n_Cores; i++) {
+            Arrays.fill(power[i], idle_power);
+        }
+    }
+
+    public CPU(int deadline, int n_Cores, McDAG mcDAG, double n, int max_freq_cores, boolean VERBOSE) {
         this.deadline = deadline;
         this.n_Cores = n_Cores;
         this.mcDAG = mcDAG;
         this.n = n;
+        this.VERBOSE = VERBOSE;
         this.max_freq_cores = max_freq_cores;
         core = new String[n_Cores][deadline];
         power = new double[n_Cores][deadline];
@@ -113,8 +130,8 @@ public class CPU {
                 core[Core][i] = Task;
             }
         } catch (Exception e) {
-            System.err.println(Task + "  ⚠ ⚠ Infeasible!");
-            e.printStackTrace();
+            if (VERBOSE) System.err.println(Task + "  ⚠ ⚠ Infeasible!");
+            if (VERBOSE) e.printStackTrace();
             throw new Exception("Infeasible!");
             //System.exit(1);
         }
@@ -125,7 +142,7 @@ public class CPU {
             try {
                 this.setPower(Task, Start, Core);
             } catch (IOException e) {
-                e.printStackTrace();
+                if (VERBOSE) e.printStackTrace();
             }
         }
     }
@@ -439,7 +456,7 @@ public class CPU {
                     this.SetTask(i, j + amount, this.getRunningTaskWithReplica(i, j));
                     power[i][j + amount] = power[i][j];
                 } catch (Exception ex) {
-                    System.err.println(this.getRunningTaskWithReplica(i, j) + "  ⚠ ⚠ Infeasible!");
+                    if (VERBOSE) System.err.println(this.getRunningTaskWithReplica(i, j) + "  ⚠ ⚠ Infeasible!");
                     throw new Exception("Infeasible!");
                     // System.exit(1);
                 }
@@ -482,7 +499,7 @@ public class CPU {
 
         } catch (Exception e) {
             //System.err.println(task+"  ⚠ ⚠ Infeasible!");
-            e.printStackTrace();
+            if (VERBOSE) e.printStackTrace();
             //System.out.println("Core  "+core_number+"  Time "+time);
             throw new Exception("Infeasible!");
             //System.exit(1);
@@ -539,8 +556,8 @@ public class CPU {
         double p[] = new double[2];
         p[0] = Avg_power();
         p[1] = Peak_power();
-        System.out.println("Avg. Power= " + Avg_power());
-        System.out.println("Peak Power= " + Peak_power());
+        if (VERBOSE) System.out.println("Avg. Power= " + Avg_power());
+        if (VERBOSE) System.out.println("Peak Power= " + Peak_power());
         return p;
     }
 

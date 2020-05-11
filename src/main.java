@@ -69,7 +69,7 @@ public class main {
         double y = 7;
 
         //Bool For make New DAGS
-        boolean create_dag = true;
+        boolean create_dag = false;
         //Number of DAG
         int n_DAGs = 1;
         //MC-DAG
@@ -87,7 +87,7 @@ public class main {
         int n_fault = 0;
 
         double percent[] = {0.0, 0.20, 0.40, 0.60, 0.80, 1.0};
-        double overrun_percent = 0.0;
+        double overrun_percent = 0.1;
         double fault_pecent = 0.0;
 
         McDAG All_DAG[] = new McDAG[n_DAGs + 1];
@@ -187,7 +187,7 @@ public class main {
 //        System.out.println();
 //        progressBar.stop();
 
-        proposedMothod proposedMothod = new proposedMothod(All_deadline[1], n_core, All_DAG[1], "1", VERBOSE);
+        proposedMothod proposedMothod = new proposedMothod(All_deadline[1], n_core, All_DAG[1], "1",overrun_percent, VERBOSE);
         proposedMothod.start();
 //        HotSpot hotSpot = new HotSpot(hotspot_path, VERBOSE);
 //        hotSpot.run(hotspot_config, floorplan, powertrace, thermaltrace);

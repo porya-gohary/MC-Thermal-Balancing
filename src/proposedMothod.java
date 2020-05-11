@@ -33,6 +33,8 @@ public class proposedMothod {
     CPU cpu;
     String xml_name;
 
+    int max_freq_cores = 1200;
+
     double overrun_percent;
     int n_overrun;
     Set<String> ov_tasks;
@@ -54,6 +56,7 @@ public class proposedMothod {
         sorted_tasks = sort_tasks(dag.getVertices().toArray(new Vertex[0]).clone());
         ov_tasks = SelectOverrunTasks(dag.getNodes_HI().toArray(new Vertex[0]).clone());
         feasibility();
+        reset_schedule();
         boolean finish = false;
         while (!finish) {
             boolean f = true;
@@ -71,12 +74,17 @@ public class proposedMothod {
                 if (f) finish = true;
             }
         }
+        if (VERBOSE) {
+            System.out.println("::::::::::");
+            System.out.println(xml_name + " Successfully Scheduled! QoS = " + QoS());
+            System.out.println("::::::::::");
+        }
     }
 
     //Check Feasibility of System
     public void feasibility() throws Exception {
         String Task[];
-        CPU cpu1 = new CPU(deadline, n_core, dag);
+        CPU cpu1 = new CPU(deadline, n_core, dag,VERBOSE);
         do {
             Task = get_tasks(false);
             if (VERBOSE) System.out.println("-------------");
@@ -100,7 +108,30 @@ public class proposedMothod {
 
     //Main Scheduling of System
     public void mainScheduling() throws Exception {
+        //Make array for tasks in specific blocks
+        String t[] = new String[n_core];
+        String Task[];
+        cpu = new CPU(deadline, n_core, dag, n, max_freq_cores,VERBOSE);
+        do {
+            Task = get_tasks(true);
+            if (VERBOSE) System.out.println("------M------");
+            int startTime = (cpu.Endtime(-1) == 0) ? 0 : cpu.Endtime(-1) + 1;
+            for (int i = 0; i < Task.length; i++) {
+                if (Task[i] == null) continue;
+                int blockSize = dag.getNodebyName(Task[0]).getWcet(0);
 
+                Vertex v = dag.getNodebyName(Task[i]);
+                cpu.SetTaskOnCore(v.getName() + " CR" + (v.getScheduled() + 1), i, startTime + (blockSize - v.getWcet(0)), startTime + blockSize - 1);
+                if (ov_tasks.contains(v.getName() + " CR" + (v.getScheduled() + 1)))
+                    cpu.SetTaskOnCore(v.getName() + " CO" + (v.getScheduled() + 1), i, startTime + blockSize, startTime + blockSize + v.getWcet(1) - 1);
+                v.setScheduled(v.getScheduled() + 1);
+
+                if (VERBOSE)
+                    System.out.println(v.getName() + " SCH: [ " + v.getScheduled() + " / " + v.getReplica() + " ]  " + v.isDone());
+            }
+        } while (Task[0] != null);
+
+        cpu.debug("main");
     }
 
 
@@ -113,7 +144,8 @@ public class proposedMothod {
         do {
             s = null;
             for (Vertex a : sorted_tasks) {
-                if (!a.isHighCr()) continue;
+                if (!a.isHighCr() && !LO) continue;
+                else if (LO && !a.isRun()) continue;
                 boolean run_flag = true;
                 if (a.isDone()) continue;
                 for (Edge e : a.getRcvEdges()) {
@@ -167,7 +199,7 @@ public class proposedMothod {
         Set<String> temp = new HashSet<String>();
 
         for (Vertex a : v) {
-            for (int i = 0; i < a.getReplica(); i++) {
+            for (int i = 1; i <= a.getReplica(); i++) {
                 temp.add(a.getName() + " CR" + i);
             }
         }
@@ -182,6 +214,7 @@ public class proposedMothod {
             do {
                 o = ov.nextInt(temp2.length);
             } while (ov_tasks.contains(temp2[o]));
+            if(VERBOSE) System.out.println("Overrun Task => "+temp2[o]);
             ov_tasks.add(temp2[o]);
         }
         return ov_tasks;
