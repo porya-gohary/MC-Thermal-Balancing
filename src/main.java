@@ -192,6 +192,9 @@ public class main {
 //        HotSpot hotSpot = new HotSpot(hotspot_path, VERBOSE);
 //        hotSpot.run(hotspot_config, floorplan, powertrace, thermaltrace);
 
+        HS_input_creator hs_input_creator =new HS_input_creator(proposedMothod.getCpu());
+        hs_input_creator.Save("HotSpot","powertrace","Alpha4.ptrace");
+
 
     }
 

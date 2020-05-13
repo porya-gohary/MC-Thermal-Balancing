@@ -600,5 +600,10 @@ public class CPU {
         }
     }
 
+    //Get power consumption of a specific core in a time
+    public double get_power(int core,int time){
+        return power[core][time];
+    }
+
 
 }

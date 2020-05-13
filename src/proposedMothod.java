@@ -266,6 +266,10 @@ public class proposedMothod {
         }
     }
 
+    public CPU getCpu() {
+        return cpu;
+    }
+
     public Integer[] getBps() {
         return bps;
     }
