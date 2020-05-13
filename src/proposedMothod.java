@@ -39,6 +39,9 @@ public class proposedMothod {
     int n_overrun;
     Set<String> ov_tasks;
 
+    Set<Integer> balancingPoint;
+    Integer[] bps;
+
 
     boolean VERBOSE = false;
 
@@ -49,6 +52,7 @@ public class proposedMothod {
         this.xml_name = xml_name;
         this.overrun_percent = overrun_percent;
         this.VERBOSE = VERBOSE;
+        balancingPoint = new HashSet<Integer>();
     }
 
     public void start() throws Exception {
@@ -79,12 +83,21 @@ public class proposedMothod {
             System.out.println(xml_name + " Successfully Scheduled! QoS = " + QoS());
             System.out.println("::::::::::");
         }
+
+        bps =new Integer[balancingPoint.size()];
+        balancingPoint.toArray(bps);
+        Arrays.sort(bps);
+        if (VERBOSE) {
+            for (int bp : bps) {
+                System.out.println("--> " + bp);
+            }
+        }
     }
 
     //Check Feasibility of System
     public void feasibility() throws Exception {
         String Task[];
-        CPU cpu1 = new CPU(deadline, n_core, dag,VERBOSE);
+        CPU cpu1 = new CPU(deadline, n_core, dag, VERBOSE);
         do {
             Task = get_tasks(false);
             if (VERBOSE) System.out.println("-------------");
@@ -111,7 +124,7 @@ public class proposedMothod {
         //Make array for tasks in specific blocks
         String t[] = new String[n_core];
         String Task[];
-        cpu = new CPU(deadline, n_core, dag, n, max_freq_cores,VERBOSE);
+        cpu = new CPU(deadline, n_core, dag, n, max_freq_cores, VERBOSE);
         do {
             Task = get_tasks(true);
             if (VERBOSE) System.out.println("------M------");
@@ -129,7 +142,10 @@ public class proposedMothod {
                 if (VERBOSE)
                     System.out.println(v.getName() + " SCH: [ " + v.getScheduled() + " / " + v.getReplica() + " ]  " + v.isDone());
             }
+            //Add end of this Block to balancing points set
+            balancingPoint.add(cpu.Endtime(-1));
         } while (Task[0] != null);
+
 
         cpu.debug("main");
     }
@@ -214,7 +230,7 @@ public class proposedMothod {
             do {
                 o = ov.nextInt(temp2.length);
             } while (ov_tasks.contains(temp2[o]));
-            if(VERBOSE) System.out.println("Overrun Task => "+temp2[o]);
+            if (VERBOSE) System.out.println("Overrun Task => " + temp2[o]);
             ov_tasks.add(temp2[o]);
         }
         return ov_tasks;
@@ -248,5 +264,9 @@ public class proposedMothod {
             a.setDone(false);
             a.setScheduled(0);
         }
+    }
+
+    public Integer[] getBps() {
+        return bps;
     }
 }
