@@ -94,11 +94,11 @@ public class CPU {
         if (core[Core][Time] != null) {
             if (core[Core][Time].contains(" CR")) {
                 return core[Core][Time].split(" CR")[0];
-            }else if(core[Core][Time].contains(" R")){
+            } else if (core[Core][Time].contains(" R")) {
                 return core[Core][Time].split(" R")[0];
-            }else if(core[Core][Time].contains(" CO")){
+            } else if (core[Core][Time].contains(" CO")) {
                 return core[Core][Time].split(" CO")[0];
-            }else {
+            } else {
                 return core[Core][Time].split(" OV")[0];
             }
         } else return null;
@@ -605,18 +605,35 @@ public class CPU {
     }
 
     //Get slack time betwwen two time
-    public int get_slack(int core,int start,int end){
-        int slack=0;
+    public int get_slack(int core, int start, int end) {
+        int slack = 0;
         for (int i = start; i < end; i++) {
-            if(this.core[core][i]==null) slack++;
+            if (this.core[core][i] == null) slack++;
         }
         return slack;
     }
 
     //Get power consumption of a specific core in a time
-    public double get_power(int core,int time){
+    public double get_power(int core, int time) {
         return power[core][time];
     }
 
+    //Remapping tasks between two core
+    public void remap(int core1, int core2, int start, int end) {
+        double power_temp;
+        String task_temp;
+
+        for (int i = start; i <= end; i++) {
+            power_temp = power[core1][i];
+            task_temp = core[core1][i];
+
+            power[core1][i] = power[core2][i];
+            core[core1][i] = core[core2][i];
+
+            power[core2][i] = power_temp;
+            core[core2][i] = task_temp;
+
+        }
+    }
 
 }
