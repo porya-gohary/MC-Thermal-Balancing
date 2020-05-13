@@ -92,9 +92,13 @@ public class CPU {
     //GET Running Task in specific Time
     public String getRunningTask(int Core, int Time) {
         if (core[Core][Time] != null) {
-            if (core[Core][Time].contains(" R")) {
+            if (core[Core][Time].contains(" CR")) {
+                return core[Core][Time].split(" CR")[0];
+            }else if(core[Core][Time].contains(" R")){
                 return core[Core][Time].split(" R")[0];
-            } else {
+            }else if(core[Core][Time].contains(" CO")){
+                return core[Core][Time].split(" CO")[0];
+            }else {
                 return core[Core][Time].split(" OV")[0];
             }
         } else return null;
@@ -598,6 +602,15 @@ public class CPU {
                 }
             }
         }
+    }
+
+    //Get slack time betwwen two time
+    public int get_slack(int core,int start,int end){
+        int slack=0;
+        for (int i = start; i < end; i++) {
+            if(this.core[core][i]==null) slack++;
+        }
+        return slack;
     }
 
     //Get power consumption of a specific core in a time

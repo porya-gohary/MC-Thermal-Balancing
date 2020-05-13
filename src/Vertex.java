@@ -58,6 +58,8 @@ public abstract class Vertex implements Comparable<Vertex>, Cloneable, Serializa
 
 	private int replica=1;
 
+	private double t_inf;
+
 
 
 	public Vertex (int id, String name, int nbLevels) {
@@ -458,5 +460,13 @@ public abstract class Vertex implements Comparable<Vertex>, Cloneable, Serializa
 
 	public void setReplica(int replica) {
 		this.replica = replica;
+	}
+
+	public double getT_inf() {
+		return t_inf;
+	}
+
+	public void setT_inf(double t_inf) {
+		this.t_inf = t_inf;
 	}
 }

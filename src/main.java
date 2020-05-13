@@ -105,6 +105,7 @@ public class main {
         //Benchmarks Name
         String benchmark[] = {"Blackscholes1", "Blackscholes2", "Blackscholes3", "Bodytrack1", "Bodytrack2", "Canneal1", "Dedup1", "Ferret1", "Ferret2", "Fluidanimate1", "Fluidanimate2", "Freqmine1", "Freqmine2", "Streamcluster1", "Streamcluster2", "Swaptions1", "Swaptions2", "x264"};
         int benchmark_time[] = {40, 30, 50, 20, 50, 60, 100, 50, 70, 65, 100, 35, 80, 45, 85, 30, 20, 100};
+        double t_inf[]={50.92,49.42,49.79,50.67,54.49,51.89,51.29,54.11,54.47,54.45,57.49,50.31,52.68,54.92,55.18,52.89,51.27,54.16};
 
         //Possible Voltages
         double v[] = {1, 1.115, 1.3};
@@ -129,7 +130,7 @@ public class main {
                 dag_Reader dr = new dag_Reader(file, VERBOSE);
                 dag = dr.getDag();
                 dag.setHINodes();
-                benchmark_mapping benchmark_mapping = new benchmark_mapping(dag, benchmark, benchmark_time);
+                benchmark_mapping benchmark_mapping = new benchmark_mapping(dag, benchmark, benchmark_time,t_inf);
                 benchmark_mapping.mapping();
                 benchmark_mapping.cal_LPL();
                 deadline = benchmark_mapping.cal_deadline(x);

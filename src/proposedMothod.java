@@ -143,7 +143,7 @@ public class proposedMothod {
                     System.out.println(v.getName() + " SCH: [ " + v.getScheduled() + " / " + v.getReplica() + " ]  " + v.isDone());
             }
             //Add end of this Block to balancing points set
-            balancingPoint.add(cpu.Endtime(-1));
+            balancingPoint.add(cpu.Endtime(-1)+1);
         } while (Task[0] != null);
 
 

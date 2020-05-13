@@ -22,9 +22,16 @@ public class HS_input_creator {
 
     //CPU of System
     CPU cpu;
+    int end;
 
     public HS_input_creator(CPU cpu) {
         this.cpu = cpu;
+        end = cpu.getDeadline();
+    }
+
+    public HS_input_creator(CPU cpu, int end) {
+        this.cpu = cpu;
+        this.end = end;
     }
 
     public void Save(String mFolder, String Folder, String Filename) throws IOException {
@@ -37,7 +44,7 @@ public class HS_input_creator {
         }
 
         //Add Power of each core
-        for (int i = 0; i < cpu.getDeadline(); i++) {
+        for (int i = 0; i < end; i++) {
             for (int j = 0; j < cpu.getN_Cores(); j++) {
                 String s = (j != cpu.getN_Cores() - 1) ? cpu.get_power(j,i) + "\t" : cpu.get_power(j,i) + "\n";
                 outputWriter.write(s);
