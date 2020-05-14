@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Scanner;
 
 /*******************************************************************************
@@ -28,6 +29,15 @@ public class onlineBalancer {
     //VERBOSE
     boolean VERBOSE = false;
 
+    String pathSeparator = File.separator;
+
+    //HotSpot location and information
+    String hotspot_path = "HotSpot" + pathSeparator + "hotspot";
+    String hotspot_config = "HotSpot" + pathSeparator + "configs" + pathSeparator + "hotspot_4.config";
+    String floorplan = "HotSpot" + pathSeparator + "floorplans" + pathSeparator + "Alpha4.flp";
+    String powertrace = "HotSpot" + pathSeparator + "powertrace" + pathSeparator + "Alpha4.ptrace";
+    String thermaltrace = "HotSpot" + pathSeparator + "thermaltrace" + pathSeparator + "thermal.ttrace";
+
     public onlineBalancer(Integer[] bps, CPU cpu, McDAG dag, boolean VERBOSE) {
         this.bps = bps;
         this.cpu = cpu;
@@ -36,11 +46,28 @@ public class onlineBalancer {
     }
 
     public void run() {
+        HotSpot hotSpot = new HotSpot(hotspot_path, VERBOSE);
+        HS_input_creator hs_input_creator =new HS_input_creator(cpu);
+
+
         for (int i = 0; i < bps.length - 1; i++) {
-            for (int j = 0; j < cpu.getN_Cores(); j++) {
-                System.out.println("Core " + j + "\tTask Name " + cpu.getRunningTask(j, bps[i + 1] - 1));
-                System.out.println(">>>>> " + predict(j, bps[i], bps[i + 1] - 1, 45));
+            try {
+                hs_input_creator.Save("HotSpot","powertrace","Alpha"+cpu.getN_Cores()+".ptrace",bps[i]);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+
+            int k=0;
+            if(VERBOSE) System.out.println("---- > BP Time= "+bps[i]+" < -----");
+            for (double a:get_cur_temp(bps[i])) {
+                System.out.println("Current Temperature core "+k+": "+a);
+                k++;
+            }
+
+//            for (int j = 0; j < cpu.getN_Cores(); j++) {
+//                System.out.println("Core " + j + "\tTask Name " + cpu.getRunningTask(j, bps[i + 1] - 1));
+//                System.out.println(">>>>> " + predict(j, bps[i], bps[i + 1] - 1, 45));
+//            }
         }
     }
 
@@ -66,17 +93,49 @@ public class onlineBalancer {
         return t;
     }
 
+    public double[] get_cur_temp(int time){
+        String mFolder = "HotSpot";
+        String sFolder = "thermaltrace";
+        String filename = "thermal.ttrace";
+        File thermalFile = null;
+        double value[] = new double[cpu.getN_Cores()];
+        try {
+            thermalFile = new File(mFolder + pathSeparator + sFolder + pathSeparator + filename);
+            Scanner Reader = new Scanner(thermalFile);
+            Reader.nextLine();
+            for (int j = 0; j < cpu.Endtime(-1); j++) {
+                String data = Reader.nextLine();
+                if(j==time) {
+                    String Sdatavalue[] = data.split("\t");
+                    for (int i = 0; i < cpu.getN_Cores(); i++) {
+                        value[i] = Double.parseDouble(Sdatavalue[i]);
+                    }
+                    break;
+                }
+            }
+            Reader.close();
+
+        } catch (FileNotFoundException e) {
+            if (VERBOSE) {
+                System.out.println("An error occurred in Reading Thermal Trace File.");
+                System.out.println("Path: " + thermalFile.getAbsolutePath());
+                e.printStackTrace();
+            }
+        }
+        return value;
+    }
+
     public void balanceCalculator() {
         String mFolder = "HotSpot";
         String sFolder = "thermaltrace";
         String filename = "thermal.ttrace";
-        String pathSeparator = File.separator;
         File thermalFile = null;
         try {
             thermalFile = new File(mFolder + pathSeparator + sFolder + pathSeparator + filename);
             Scanner Reader = new Scanner(thermalFile);
             //Reader.hasNextLine()
             double diff = 0;
+            Reader.nextLine();
             for (int j = 0; j < cpu.Endtime(-1); j++) {
                 String data = Reader.nextLine();
                 String Sdatavalue[] = data.split("\t");

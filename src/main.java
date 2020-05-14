@@ -112,12 +112,7 @@ public class main {
         //Possible Frequencies
         int freq[] = {800, 1000, 1200};
 
-        //HotSpot location and information
-        String hotspot_path = "HotSpot" + pathSeparator + "hotspot";
-        String hotspot_config = "HotSpot" + pathSeparator + "configs" + pathSeparator + "hotspot_4.config";
-        String floorplan = "HotSpot" + pathSeparator + "floorplans" + pathSeparator + "Alpha4.flp";
-        String powertrace = "HotSpot" + pathSeparator + "powertrace" + pathSeparator + "Alpha4.ptrace";
-        String thermaltrace = "HotSpot" + pathSeparator + "thermaltrace" + pathSeparator + "thermal.ttrace";
+
 
 
         if (create_dag) {
@@ -190,13 +185,11 @@ public class main {
 
         proposedMothod proposedMothod = new proposedMothod(All_deadline[1], n_core, All_DAG[1], "1",overrun_percent, VERBOSE);
         proposedMothod.start();
-        onlineBalancer onlineBalancer=new onlineBalancer(proposedMothod.getBps(),proposedMothod.getCpu(),proposedMothod.getDag());
+        onlineBalancer onlineBalancer=new onlineBalancer(proposedMothod.getBps(),proposedMothod.getCpu(),proposedMothod.getDag(),VERBOSE);
         onlineBalancer.run();
-//        HotSpot hotSpot = new HotSpot(hotspot_path, VERBOSE);
-//        hotSpot.run(hotspot_config, floorplan, powertrace, thermaltrace);
 
-        HS_input_creator hs_input_creator =new HS_input_creator(proposedMothod.getCpu());
-        hs_input_creator.Save("HotSpot","powertrace","Alpha4.ptrace");
+
+
 
 
     }

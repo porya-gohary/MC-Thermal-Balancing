@@ -29,12 +29,8 @@ public class HS_input_creator {
         end = cpu.getDeadline();
     }
 
-    public HS_input_creator(CPU cpu, int end) {
-        this.cpu = cpu;
+    public void Save(String mFolder, String Folder, String Filename, int end) throws IOException {
         this.end = end;
-    }
-
-    public void Save(String mFolder, String Folder, String Filename) throws IOException {
         BufferedWriter outputWriter = null;
         outputWriter = new BufferedWriter(new FileWriter(mFolder + "//" + Folder + "//" + Filename));
         //Add HotSpot Header
