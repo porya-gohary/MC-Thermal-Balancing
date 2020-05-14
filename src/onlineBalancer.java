@@ -16,14 +16,26 @@
  *******************************************************************************/
 public class onlineBalancer {
     //Balancing point array
-    int[] bps;
+    Integer[] bps;
     //CPU of System
     CPU cpu;
     //DaG
     McDAG dag;
 
+    public onlineBalancer(Integer[] bps, CPU cpu, McDAG dag) {
+        this.bps = bps;
+        this.cpu = cpu;
+        this.dag = dag;
+    }
 
-
+    public void run(){
+        for (int i = 0; i < bps.length-1; i++) {
+            for (int j = 0; j < cpu.getN_Cores(); j++) {
+                System.out.println("Core "+j+"\tTask Name "+cpu.getRunningTask(j,bps[i+1]-1));
+                System.out.println(">>>>> "+predict(j,bps[i],bps[i+1]-1,45));
+            }
+        }
+    }
 
     //Calculate predict value for thermal balancing
     public double predict(int core,int start,int end,double t_cur){
@@ -33,13 +45,18 @@ public class onlineBalancer {
         int slack;
         int WC_HI;
 
+
+
         if(task==null) t_inf=45.0;
         else t_inf=dag.getNodebyName(task).getT_inf();
         slack=cpu.get_slack(core,start,end);
-        WC_HI=dag.getNodebyName(task).getbigWCET();
+        if(task==null) WC_HI=0;
+        else WC_HI=dag.getNodebyName(task).getbigWCET();
 
         //Predict formula
-        t=slack/((t_cur-t_inf)*WC_HI);
+        if(t_cur>t_inf)t=(slack+1)/((Math.abs(t_cur-t_inf)+1)*(WC_HI+1));
+        else t=(-1)*(slack+1)/((Math.abs(t_cur-t_inf)+1)*(WC_HI+1));
+
         return t;
     }
 

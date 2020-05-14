@@ -190,6 +190,8 @@ public class main {
 
         proposedMothod proposedMothod = new proposedMothod(All_deadline[1], n_core, All_DAG[1], "1",overrun_percent, VERBOSE);
         proposedMothod.start();
+        onlineBalancer onlineBalancer=new onlineBalancer(proposedMothod.getBps(),proposedMothod.getCpu(),proposedMothod.getDag());
+        onlineBalancer.run();
 //        HotSpot hotSpot = new HotSpot(hotspot_path, VERBOSE);
 //        hotSpot.run(hotspot_config, floorplan, powertrace, thermaltrace);
 
@@ -263,4 +265,6 @@ public class main {
         }
         return null;
     }
+
+
 }

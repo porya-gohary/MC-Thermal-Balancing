@@ -273,4 +273,8 @@ public class proposedMothod {
     public Integer[] getBps() {
         return bps;
     }
+
+    public McDAG getDag() {
+        return dag;
+    }
 }
