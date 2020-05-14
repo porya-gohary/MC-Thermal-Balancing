@@ -27,6 +27,8 @@ public class HotSpot {
         this.VERBOSE = VERBOSE;
     }
 
+
+
     public void run(String hotspot_config, String floorplan, String powertrace, String thermaltrace) {
         this.hotspot_config += hotspot_config;
         this.floorplan += floorplan;
