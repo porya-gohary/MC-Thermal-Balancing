@@ -33,9 +33,9 @@ public class onlineBalancer {
 
     //HotSpot location and information
     String hotspot_path = "HotSpot" + pathSeparator + "hotspot";
-    String hotspot_config = "HotSpot" + pathSeparator + "configs" + pathSeparator + "hotspot_4.config";
-    String floorplan = "HotSpot" + pathSeparator + "floorplans" + pathSeparator + "Alpha4.flp";
-    String powertrace = "HotSpot" + pathSeparator + "powertrace" + pathSeparator + "Alpha4.ptrace";
+    String hotspot_config = "HotSpot" + pathSeparator + "configs" + pathSeparator;
+    String floorplan = "HotSpot" + pathSeparator + "floorplans" + pathSeparator;
+    String powertrace = "HotSpot" + pathSeparator + "powertrace" + pathSeparator;
     String thermaltrace = "HotSpot" + pathSeparator + "thermaltrace" + pathSeparator + "thermal.ttrace";
 
     public onlineBalancer(Integer[] bps, CPU cpu, McDAG dag, boolean VERBOSE) {
@@ -47,20 +47,29 @@ public class onlineBalancer {
 
     public void run() {
         HotSpot hotSpot = new HotSpot(hotspot_path, VERBOSE);
-        HS_input_creator hs_input_creator =new HS_input_creator(cpu);
+        HS_input_creator hs_input_creator = new HS_input_creator(cpu);
 
 
         for (int i = 0; i < bps.length - 1; i++) {
             try {
-                hs_input_creator.Save("HotSpot","powertrace","Alpha"+cpu.getN_Cores()+".ptrace",bps[i]);
+                hs_input_creator.Save("HotSpot", "powertrace", "Alpha" + cpu.getN_Cores() + ".ptrace", bps[i]);
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            int k=0;
-            if(VERBOSE) System.out.println("---- > BP Time= "+bps[i]+" < -----");
-            for (double a:get_cur_temp(bps[i])) {
-                System.out.println("Current Temperature core "+k+": "+a);
+            hotspot_config = "HotSpot" + pathSeparator + "configs" + pathSeparator;
+            floorplan = "HotSpot" + pathSeparator + "floorplans" + pathSeparator;
+            powertrace = "HotSpot" + pathSeparator + "powertrace" + pathSeparator;
+
+            hotspot_config += "hotspot_" + cpu.getN_Cores() + ".config";
+            floorplan += "Alpha" + cpu.getN_Cores() + ".flp";
+            powertrace += "Alpha" + cpu.getN_Cores() + ".ptrace";
+            hotSpot.run(hotspot_config, floorplan, powertrace, thermaltrace);
+
+            int k = 0;
+            System.out.println("---- > BP Time= " + bps[i] + " < -----");
+            for (double a : get_cur_temp(bps[i])) {
+                System.out.println("Current Temperature core " + k + ": " + a);
                 k++;
             }
 
@@ -93,7 +102,7 @@ public class onlineBalancer {
         return t;
     }
 
-    public double[] get_cur_temp(int time){
+    public double[] get_cur_temp(int time) {
         String mFolder = "HotSpot";
         String sFolder = "thermaltrace";
         String filename = "thermal.ttrace";
@@ -105,7 +114,7 @@ public class onlineBalancer {
             Reader.nextLine();
             for (int j = 0; j < cpu.Endtime(-1); j++) {
                 String data = Reader.nextLine();
-                if(j==time) {
+                if (j == time) {
                     String Sdatavalue[] = data.split("\t");
                     for (int i = 0; i < cpu.getN_Cores(); i++) {
                         value[i] = Double.parseDouble(Sdatavalue[i]);

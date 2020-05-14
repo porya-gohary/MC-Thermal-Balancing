@@ -6,7 +6,7 @@ import java.time.Duration;
 import java.time.Instant;
 
 public class HotSpot {
-    String command = "";
+
     //./hotspot -c hotspot_a9.config -f ~/Desktop/Alpha4.flp -p ~/Desktop/Alpha4.ptrace -steady_file Alpha4.steady -model_type grid -o alpha4.ttrace
 
     String hotspot_path = "";
@@ -30,18 +30,24 @@ public class HotSpot {
 
 
     public void run(String hotspot_config, String floorplan, String powertrace, String thermaltrace) {
+        this.hotspot_config = " -c ";
+        this.floorplan = " -f ";
+        this.powertrace = " -p ";
+        this.steady_file = " -steady_file Alpha.steady";
+        this.model_type = " -model_type grid";
+        this.thermaltrace = " -o ";
         this.hotspot_config += hotspot_config;
         this.floorplan += floorplan;
         this.powertrace += powertrace;
         this.thermaltrace += thermaltrace;
-        command = hotspot_path + this.hotspot_config + this.floorplan + this.powertrace + steady_file + model_type + this.thermaltrace;
-        Runtime runtime = Runtime.getRuntime();
-//        String[] s = new String[] {hotspot_path , command};
+        Process process =null;
+        String command = hotspot_path + this.hotspot_config + this.floorplan + this.powertrace + steady_file + model_type + this.thermaltrace;
+        if (VERBOSE)System.out.println(command);
+        Runtime runtime = null;
         try {
             Instant start = Instant.now();
-            Process process = runtime.exec(command);
-
-
+            runtime = Runtime.getRuntime();
+            process = runtime.exec(command);
             InputStream stderr = process.getInputStream();
             InputStreamReader isr = new InputStreamReader(stderr);
             BufferedReader br = new BufferedReader(isr);
@@ -61,7 +67,8 @@ public class HotSpot {
             Instant finish = Instant.now();
             long timeElapsed = Duration.between(start, finish).toMillis();
             System.out.println("[HotSpot Completed! -- Time Elapsed: " + timeElapsed +" ms]");
-            //System.out.println("Process exitValue: " + exitVal);
+            if (VERBOSE) System.out.println("Process exitValue: " + exitVal);
+            process.destroy();
 
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
