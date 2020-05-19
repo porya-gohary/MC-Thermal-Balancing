@@ -99,8 +99,15 @@ public class main {
         // Power Results
         double Pro_power[] = new double[2];
 
+        //Temperature Results [0] Avg. Diff. [1] Max. Diff. [2] Max. Temp. [3] Avg. Temp.
+        double temp_before[] = new double[4];
+        double temp_after[] = new double[4];
+
         //Boolean for Run Each Method
-        boolean Pro_run = false;
+        boolean Pro_run = true;
+
+        //QoS
+        double PR_QoS = 0;
 
         //Benchmarks Name
         String benchmark[] = {"Blackscholes1", "Blackscholes2", "Blackscholes3", "Bodytrack1", "Bodytrack2", "Canneal1", "Dedup1", "Ferret1", "Ferret2", "Fluidanimate1", "Fluidanimate2", "Freqmine1", "Freqmine2", "Streamcluster1", "Streamcluster2", "Swaptions1", "Swaptions2", "x264"};
@@ -172,19 +179,91 @@ public class main {
 
             }
         }
-//        ProgressBar progressBar =new ProgressBar();
-//        progressBar.start();
+        ProgressBar progressBar = new ProgressBar();
+        progressBar.start();
 //        for (int i = 0; i <= 100; i++) {
 //            progressBar.setPercent(i);
 //            Thread.sleep(1000);
 //        }
 //        System.out.println();
 //        progressBar.stop();
+        for (int j = 0; j < percent.length; j++) {
+            overrun_percent = percent[j];
+            System.out.println("Overrun Prencent= " + overrun_percent+"\r");
 
-        proposedMothod proposedMothod = new proposedMothod(All_deadline[1], n_core, All_DAG[1], "1", overrun_percent, VERBOSE);
-        proposedMothod.start();
-        onlineBalancer onlineBalancer = new onlineBalancer(proposedMothod.getBps(), proposedMothod.getCpu(), proposedMothod.getDag(), VERBOSE);
-        onlineBalancer.run();
+
+            File newFolder2 = new File("OV" + overrun_percent + "F" + fault_pecent);
+            newFolder2.mkdir();
+
+            BufferedWriter outputWriter = null;
+            outputWriter = new BufferedWriter(new FileWriter("OV" + overrun_percent + "F" + fault_pecent + "//" + "Summary.txt"));
+
+            PR_Sch = n_DAGs;
+
+            for (int i = 1; i <= n_DAGs; i++) {
+                progressBar.setPercent(i * 100 / n_DAGs);
+                xml_name = i + "";
+
+                File newFolder = new File("OV" + overrun_percent + "F" + fault_pecent + "//" + xml_name);
+                newFolder.mkdir();
+
+                outputWriter.write(">>>>>>>>>> ::: DAG " + xml_name + " Start ::: <<<<<<<<<<" + "\n");
+
+                dag = All_DAG[i];
+                deadline = All_deadline[i];
+                if (Pro_run) {
+                    progressBar.setMethod("Proposed Method");
+                    if(VERBOSE) System.out.println("------------> Proposed Method <----------");
+                    outputWriter.write("------------> Proposed Method <----------" + "\n");
+                    try {
+                        proposedMothod proposedMothod = new proposedMothod(deadline, n_core, dag, xml_name, overrun_percent, VERBOSE);
+                        proposedMothod.start();
+                        onlineBalancer onlineBalancer = new onlineBalancer(proposedMothod.getBps(), proposedMothod.getCpu(), proposedMothod.getDag(), VERBOSE);
+                        temp_before = onlineBalancer.balanceCalculator();
+                        onlineBalancer.run();
+                        temp_after = onlineBalancer.balanceCalculator();
+                        Pro_power[0] += proposedMothod.getCpu().power_results()[0];
+                        Pro_power[1] += proposedMothod.getCpu().power_results()[1];
+                        PR_QoS += proposedMothod.QoS();
+                        outputWriter.write("Avg. Power= " + proposedMothod.getCpu().power_results()[0] + "\n");
+                        outputWriter.write("Peak Power= " + proposedMothod.getCpu().power_results()[1] + "\n");
+                        outputWriter.write("═════╣  QoS = " + proposedMothod.QoS() + "\n");
+                        outputWriter.write("═══════════════════ Before ════════════════════════ "+ "\n");
+                        //Temperature Results [0] Avg. Diff. [1] Max. Diff. [2] Max. Temp. [3] Avg. Temp.
+                        outputWriter.write("Avg. Diff. = " + temp_before[0] + "\n");
+                        outputWriter.write("Max. Diff. = " + temp_before[1] + "\n");
+                        outputWriter.write("Max. Temp. = " + temp_before[2] + "\n");
+                        outputWriter.write("Avg. Temp. = " + temp_before[3] + "\n");
+
+                        outputWriter.write("═══════════════════  After  ════════════════════════ "+ "\n");
+                        //Temperature Results [0] Avg. Diff. [1] Max. Diff. [2] Max. Temp. [3] Avg. Temp.
+                        outputWriter.write("Avg. Diff. = " + temp_after[0] + "\n");
+                        outputWriter.write("Max. Diff. = " + temp_after[1] + "\n");
+                        outputWriter.write("Max. Temp. = " + temp_after[2] + "\n");
+                        outputWriter.write("Avg. Temp. = " + temp_after[3] + "\n");
+
+                    } catch (Exception e) {
+                        if (VERBOSE) e.printStackTrace();
+                        outputWriter.write("[ PROPOSED METHOD ] Infeasible!   " + xml_name + "\n");
+                        PR_Sch--;
+                    }
+
+                }
+            }
+            outputWriter.write("\n");
+            outputWriter.write(">>>>>>>>>>>>> SUMMARY OF ALL DAGs <<<<<<<<<<<<" + "\n");
+            outputWriter.write("Proposed Method SCH: " + PR_Sch + "\n");
+
+            outputWriter.write("Proposed Method Avg. Power= " + (Pro_power[0] / PR_Sch) + "\n");
+
+            outputWriter.write("Proposed Method Peak Power= " + (Pro_power[1] / PR_Sch) + "\n");
+
+            outputWriter.write("Proposed Method QoS= " + (PR_QoS / PR_Sch) + "\n");
+
+            outputWriter.flush();
+            outputWriter.close();
+        }
+        progressBar.stop();
 
 
     }
