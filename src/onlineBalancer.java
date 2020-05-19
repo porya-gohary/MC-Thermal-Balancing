@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Scanner;
 
 /*******************************************************************************
@@ -49,6 +50,19 @@ public class onlineBalancer {
         HotSpot hotSpot = new HotSpot(hotspot_path, VERBOSE);
         HS_input_creator hs_input_creator = new HS_input_creator(cpu);
 
+        try {
+            hs_input_creator.Save("HotSpot", "powertrace", "Alpha" + cpu.getN_Cores() + ".ptrace", cpu.Endtime(-1));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        hotspot_config += "hotspot_" + cpu.getN_Cores() + ".config";
+        floorplan += "Alpha" + cpu.getN_Cores() + ".flp";
+        powertrace += "Alpha" + cpu.getN_Cores() + ".ptrace";
+        hotSpot.run(hotspot_config, floorplan, powertrace, thermaltrace);
+
+        System.out.println("Before:");
+        balanceCalculator();
 
         for (int i = 0; i < bps.length - 1; i++) {
             try {
@@ -66,18 +80,40 @@ public class onlineBalancer {
             powertrace += "Alpha" + cpu.getN_Cores() + ".ptrace";
             hotSpot.run(hotspot_config, floorplan, powertrace, thermaltrace);
 
-            int k = 0;
-            System.out.println("---- > BP Time= " + bps[i] + " < -----");
-            for (double a : get_cur_temp(bps[i])) {
-                System.out.println("Current Temperature core " + k + ": " + a);
-                k++;
+            boolean sw[]=new boolean[cpu.getN_Cores()];
+            Arrays.fill(sw, true);
+            double pre[]=new double[cpu.getN_Cores()];
+
+            for (int j = 0; j < cpu.getN_Cores(); j++) {
+                pre[j]=predict(j, bps[i], bps[i + 1] - 1, get_cur_temp(bps[i])[j]);
             }
 
-//            for (int j = 0; j < cpu.getN_Cores(); j++) {
-//                System.out.println("Core " + j + "\tTask Name " + cpu.getRunningTask(j, bps[i + 1] - 1));
-//                System.out.println(">>>>> " + predict(j, bps[i], bps[i + 1] - 1, 45));
-//            }
+            for (int j = 0; j < cpu.getN_Cores()/2; j++) {
+                int MinIndex = getMinIndex(pre, sw);
+                int MaxIndex = getMaxIndex(pre, sw);
+                sw[MaxIndex]=false;
+                sw[MinIndex]=false;
+                cpu.remap(MaxIndex, MinIndex, bps[i], bps[i + 1]);
+            }
         }
+
+
+        hotspot_config = "HotSpot" + pathSeparator + "configs" + pathSeparator;
+        floorplan = "HotSpot" + pathSeparator + "floorplans" + pathSeparator;
+        powertrace = "HotSpot" + pathSeparator + "powertrace" + pathSeparator;
+
+        try {
+            hs_input_creator.Save("HotSpot", "powertrace", "Alpha" + cpu.getN_Cores() + ".ptrace", cpu.Endtime(-1));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        hotspot_config += "hotspot_" + cpu.getN_Cores() + ".config";
+        floorplan += "Alpha" + cpu.getN_Cores() + ".flp";
+        powertrace += "Alpha" + cpu.getN_Cores() + ".ptrace";
+        hotSpot.run(hotspot_config, floorplan, powertrace, thermaltrace);
+        System.out.println("After: ");
+        balanceCalculator();
     }
 
     //Calculate predict value for thermal balancing
@@ -139,6 +175,7 @@ public class onlineBalancer {
         String sFolder = "thermaltrace";
         String filename = "thermal.ttrace";
         File thermalFile = null;
+        double MaxDiff=0;
         try {
             thermalFile = new File(mFolder + pathSeparator + sFolder + pathSeparator + filename);
             Scanner Reader = new Scanner(thermalFile);
@@ -153,11 +190,12 @@ public class onlineBalancer {
                     value[i] = Double.parseDouble(Sdatavalue[i]);
                 }
                 diff += getMax(value) - getMin(value);
+                if(getMax(value) - getMin(value)>MaxDiff) MaxDiff =getMax(value) - getMin(value);
                 //System.out.println(data);
             }
             Reader.close();
-            System.out.println(diff);
-            System.out.println(diff / cpu.Endtime(-1));
+            System.out.println("Max. Different= "+MaxDiff);
+            System.out.println("Avg. Different= "+(diff / cpu.Endtime(-1)));
         } catch (FileNotFoundException e) {
             if (VERBOSE) {
                 System.out.println("An error occurred in Reading Thermal Trace File.");
@@ -179,6 +217,19 @@ public class onlineBalancer {
         return maxValue;
     }
 
+    //Method for getting the maximum available value index
+    public int getMaxIndex(double[] inputArray, boolean[] available){
+        double maxValue = 0;
+        int index=0;
+        for (int i = 0; i < inputArray.length; i++) {
+            if (inputArray[i] > maxValue && available[i]) {
+                maxValue = inputArray[i];
+                index =i;
+            }
+        }
+        return index;
+    }
+
     // Method for getting the minimum value
     public double getMin(double[] inputArray) {
         double minValue = inputArray[0];
@@ -188,6 +239,20 @@ public class onlineBalancer {
             }
         }
         return minValue;
+    }
+
+
+    //Method for getting the minimum available value index
+    public int getMinIndex(double[] inputArray, boolean[] available){
+        double minValue = 200;
+        int index=0;
+        for (int i = 0; i < inputArray.length; i++) {
+            if (inputArray[i] < minValue && available[i]) {
+                minValue = inputArray[i];
+                index =i;
+            }
+        }
+        return index;
     }
 
 

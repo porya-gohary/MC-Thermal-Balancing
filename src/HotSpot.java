@@ -52,12 +52,12 @@ public class HotSpot {
             InputStreamReader isr = new InputStreamReader(stderr);
             BufferedReader br = new BufferedReader(isr);
             String line = null;
-            int i = 0;
+//            int i = 0;
             while ((line = br.readLine()) != null) {
                 if (VERBOSE) System.out.println(line);
                 else {
-                    System.out.print("Processing HotSpot : " +  progressbar(i) + "\r");
-                    i++;
+//                    System.out.print("Processing HotSpot : " +  progressbar(i) + "\r");
+//                    i++;
                 }
             }
             if (!VERBOSE)System.out.println();
@@ -66,7 +66,7 @@ public class HotSpot {
             int exitVal = process.waitFor();
             Instant finish = Instant.now();
             long timeElapsed = Duration.between(start, finish).toMillis();
-            System.out.println("[HotSpot Completed! -- Time Elapsed: " + timeElapsed +" ms]");
+            if (VERBOSE) System.out.println("[HotSpot Completed! -- Time Elapsed: " + timeElapsed +" ms]");
             if (VERBOSE) System.out.println("Process exitValue: " + exitVal);
             process.destroy();
 
