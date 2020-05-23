@@ -19,7 +19,7 @@ public class ProgressBar extends Thread {
         while (showProgress) {
             Date endDateTime = new Date();
             Map<TimeUnit,Long> timeElapsed = computeDiff(startDateTime, endDateTime);
-            System.out.print("Processing "+Method+" " + percent + "% " + ind
+            System.out.print(" Processing "+Method+" " + percent + "% " + ind
                     + finished.substring(0, (percent * finished.length() / 100))
                     + unfinished.substring(0, unfinished.length() - (percent * unfinished.length() / 100))
                     + ind + "  "

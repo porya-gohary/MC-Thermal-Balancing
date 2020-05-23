@@ -636,4 +636,22 @@ public class CPU {
         }
     }
 
+    //Worst-Fit mapping core function
+    public int worstFit(){
+        int min=deadline;
+        int index =0;
+
+        for (int i = 0; i < n_Cores; i++) {
+            int temp=deadline;
+            for (int j = 0; j < deadline; j++) {
+                if (core[i][j]==null) temp--;
+            }
+            if(temp<min){
+                min=temp;
+                index=i;
+            }
+        }
+        return index;
+    }
+
 }

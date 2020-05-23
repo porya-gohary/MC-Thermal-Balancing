@@ -60,7 +60,7 @@ public class HotSpot {
 //                    i++;
                 }
             }
-            if (!VERBOSE)System.out.println();
+//            if (!VERBOSE)System.out.println();
 
 
             int exitVal = process.waitFor();

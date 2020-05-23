@@ -177,10 +177,10 @@ public class proposedMothod {
                     s = a;
                     t[k] = s.getName();
                     k++;
-                    if (k == 4) break;
+                    if (k == n_core) break;
                 }
             }
-        } while (k != 4 && s != null);
+        } while (k != n_core && s != null);
         return t;
     }
 

@@ -69,9 +69,9 @@ public class main {
         double y = 7;
 
         //Bool For make New DAGS
-        boolean create_dag = false;
+        boolean create_dag = true;
         //Number of DAG
-        int n_DAGs = 1;
+        int n_DAGs = 100;
         //MC-DAG
         McDAG dag;
         //Dag XML Name
@@ -189,7 +189,7 @@ public class main {
 //        progressBar.stop();
         for (int j = 0; j < percent.length; j++) {
             overrun_percent = percent[j];
-            System.out.println("Overrun Prencent= " + overrun_percent+"\r");
+            System.out.println("Overrun Prencent= " + overrun_percent);
 
 
             File newFolder2 = new File("OV" + overrun_percent + "F" + fault_pecent);
