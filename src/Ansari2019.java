@@ -1,5 +1,7 @@
 import java.util.*;
 
+import static java.lang.Math.floor;
+
 public class Ansari2019 {
 
     //Deadline
@@ -16,7 +18,7 @@ public class Ansari2019 {
     //Number of active core
     int activeCore;
 
-    int max_freq_cores = 1200;
+    int max_freq = 1200;
 
     double overrun_percent;
     int n_overrun;
@@ -45,19 +47,27 @@ public class Ansari2019 {
     public void feasibility() throws Exception {
         Vertex t;
         CPU cpu1 = new CPU(deadline, n_core, dag, VERBOSE);
-        do{
-          t=dag.getNodebyName(get_task(false));
-            int startTime=0;
-            int mappedCore=cpu1.worstFit();
+        do {
+            t = dag.getNodebyName(get_task(false));
+            int startTime = 0;
             for (Edge e : t.getRcvEdges()) {
-                if(cpu1.getEndTimeTask(e.getSrc().getName()+" CO3")>startTime)
-                    startTime=cpu1.getEndTimeTask(e.getSrc().getName())+1;
-            }
-            for (int i = startTime; i < deadline; i++) {
-
+                if (cpu1.getEndTimeTask(e.getSrc().getName() + " CO" + (int) (n - 1)) > startTime) {
+                    startTime = cpu1.getEndTimeTask(e.getSrc().getName()) + 1;
+                }
             }
 
-        }while (t!=null);
+            for (int k = 0; k < (int) floor(n / 2); k++) {
+                int mappedCore = cpu1.worstFit();
+                for (int i = startTime; i < deadline; i++) {
+                    if (cpu.CheckTimeSlot(mappedCore, i, i + t.getWcet(1)) && (cpu.maxCoreInterval(i, i + t.getWcet(1)) < activeCore)) {
+                        cpu.SetTaskOnCore(t.getName() + " CR" + k, mappedCore, i, i + t.getWcet(0) - 1);
+                        cpu.SetTaskOnCore(t.getName() + " CO" + k, mappedCore, i+t.getWcet(0), i + t.getWcet(1) - 1);
+                    }
+                }
+            }
+            //TODO Add Scheduling Faulty phase
+
+        } while (t != null);
     }
 
     //get the Task that must be run
@@ -75,15 +85,13 @@ public class Ansari2019 {
                 }
             }
             if (!run_flag) continue;
-            else{
-                x=a.getName();
+            else {
+                x = a.getName();
                 break;
             }
         }
         return x;
     }
-
-
 
 
     //Sorting Tasks from big to small

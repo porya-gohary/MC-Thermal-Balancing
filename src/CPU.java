@@ -338,23 +338,13 @@ public class CPU {
         }
     }
 
-    //Return Max. Core Can Use in specific Time
+    //Return number of Core that in Use in specific Time
     public int max_core(int Time) {
-        String t;
-        int max = n_Cores;
-        for (int i = 0; i < n_Cores; i++) {
-            if (getRunningTask(i, Time) != null) {
-                int m = Integer.parseInt(core[i][Time].split(" ")[1].replaceAll("\\D", ""));
-                if (m <= (ceil(n / 2) - 1)) {
-                    t = getRunningTask(i, Time);
-//                System.out.println(mcDAG.getNodebyName(t).getTSP_Active());
-                    if (mcDAG.getNodebyName(t).getTSP_Active() < max) max = mcDAG.getNodebyName(t).getTSP_Active();
-                } else {
-                    if (max_freq_cores < max) max = max_freq_cores;
-                }
-            }
+        int i=0;
+        for (int j = 0; j < n_Cores; j++) {
+            if(core[j][Time]!=null)i++;
         }
-        return max;
+        return i;
     }
 
 
@@ -411,11 +401,11 @@ public class CPU {
         return r;
     }
 
-    //Return Max Core Can Use in specific Interval  [Start Time , End Time]
+    //Return  #Core that in Use in specific Interval  [Start Time , End Time]
     public int maxCoreInterval(int Start, int End) {
-        int max = n_Cores;
+        int max = 0;
         for (int i = Start; i <= End; i++) {
-            if (this.max_core(i) < max) max = this.max_core(i);
+            if (this.max_core(i) > max) max = this.max_core(i);
         }
 
         return max;
