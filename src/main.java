@@ -86,7 +86,7 @@ public class main {
         //Number Of Fault
         int n_fault = 0;
 
-        double n=3;
+        double n = 3;
 
 //        double percent[] = {0.0, 0.20, 0.40, 0.60, 0.80, 1.0};
         double percent[] = {0.0};
@@ -99,15 +99,18 @@ public class main {
         //Scheduling Results:
         int PR_Sch;
         int ANS_Sch;
+        int MED_Sch;
 
         // Power Results
         double Pro_power[] = new double[2];
         double Ans_power[] = new double[2];
+        double Med_power[] = new double[2];
 
         //Temperature Results [0] Avg. Diff. [1] Max. Diff. [2] Max. Temp. [3] Avg. Temp.
         double temp_before[] = new double[4];
         double temp_after[] = new double[4];
         double temp_Ans[] = new double[4];
+        double temp_Med[] = new double[4];
 
         //Boolean for Run Each Method
         boolean Pro_run = false;
@@ -117,6 +120,7 @@ public class main {
         //QoS
         double PR_QoS = 0;
         double ANS_QoS = 0;
+        double MED_QoS = 0;
 
         //Benchmarks Name
         String benchmark[] = {"Blackscholes1", "Blackscholes2", "Blackscholes3", "Bodytrack1", "Bodytrack2", "Canneal1", "Dedup1", "Ferret1", "Ferret2", "Fluidanimate1", "Fluidanimate2", "Freqmine1", "Freqmine2", "Streamcluster1", "Streamcluster2", "Swaptions1", "Swaptions2", "x264"};
@@ -209,6 +213,7 @@ public class main {
 
             PR_Sch = n_DAGs;
             ANS_Sch = n_DAGs;
+            MED_Sch = n_DAGs;
 
             for (int i = 1; i <= n_DAGs; i++) {
                 progressBar.setPercent(i * 100 / n_DAGs);
@@ -223,7 +228,7 @@ public class main {
                 deadline = All_deadline[i];
                 if (Pro_run) {
                     progressBar.setMethod("Proposed Method");
-                    if(VERBOSE) System.out.println("------------> Proposed Method <----------");
+                    if (VERBOSE) System.out.println("------------> Proposed Method <----------");
                     outputWriter.write("------------> Proposed Method <----------" + "\n");
                     try {
                         proposedMothod proposedMothod = new proposedMothod(deadline, n_core, dag, xml_name, overrun_percent, VERBOSE);
@@ -238,14 +243,14 @@ public class main {
                         outputWriter.write("Avg. Power= " + proposedMothod.getCpu().power_results()[0] + "\n");
                         outputWriter.write("Peak Power= " + proposedMothod.getCpu().power_results()[1] + "\n");
                         outputWriter.write("═════╣  QoS = " + proposedMothod.QoS() + "\n");
-                        outputWriter.write("═══════════════════ Before ════════════════════════ "+ "\n");
+                        outputWriter.write("═══════════════════ Before ════════════════════════ " + "\n");
                         //Temperature Results [0] Avg. Diff. [1] Max. Diff. [2] Max. Temp. [3] Avg. Temp.
                         outputWriter.write("Avg. Diff. = " + temp_before[0] + "\n");
                         outputWriter.write("Max. Diff. = " + temp_before[1] + "\n");
                         outputWriter.write("Max. Temp. = " + temp_before[2] + "\n");
                         outputWriter.write("Avg. Temp. = " + temp_before[3] + "\n");
 
-                        outputWriter.write("═══════════════════  After  ════════════════════════ "+ "\n");
+                        outputWriter.write("═══════════════════  After  ════════════════════════ " + "\n");
                         //Temperature Results [0] Avg. Diff. [1] Max. Diff. [2] Max. Temp. [3] Avg. Temp.
                         outputWriter.write("Avg. Diff. = " + temp_after[0] + "\n");
                         outputWriter.write("Max. Diff. = " + temp_after[1] + "\n");
@@ -260,11 +265,11 @@ public class main {
 
                 }
 
-                if(Ans_run){
+                if (Ans_run) {
                     progressBar.setMethod("Ansari Method");
-                    if(VERBOSE) System.out.println("------------> Ansari Method <----------");
-                    outputWriter.write("------------> Ansari Method <----------" + "\n");
-                    Ansari2019 ansari2019=new Ansari2019(deadline,n_core,n,dag,xml_name,overrun_percent,VERBOSE);
+                    if (VERBOSE) System.out.println("------------> Ansari Method <----------");
+                    outputWriter.write("\n------------> Ansari Method <----------" + "\n");
+                    Ansari2019 ansari2019 = new Ansari2019(deadline, n_core, n, dag, xml_name, overrun_percent, VERBOSE);
                     try {
                         ansari2019.start();
                         Ans_power[0] += ansari2019.getCpu().power_results()[0];
@@ -276,7 +281,7 @@ public class main {
                         outputWriter.write("═════╣  QoS = " + ansari2019.QoS() + "\n");
 
                         temp_Ans = ansari2019.balanceCalculator();
-                        outputWriter.write("═══════════════════  Temp.  ════════════════════════ "+ "\n");
+                        outputWriter.write("═══════════════════  Temp.  ════════════════════════ " + "\n");
                         //Temperature Results [0] Avg. Diff. [1] Max. Diff. [2] Max. Temp. [3] Avg. Temp.
                         outputWriter.write("Avg. Diff. = " + temp_Ans[0] + "\n");
                         outputWriter.write("Max. Diff. = " + temp_Ans[1] + "\n");
@@ -290,20 +295,54 @@ public class main {
                     }
                 }
 
-                if(Med_run){
-                    Medina medina=new Medina(deadline,n_core,n,dag,xml_name,overrun_percent,VERBOSE);
-                    medina.start();
+                if (Med_run) {
+                    progressBar.setMethod("Medina Method");
+                    if (VERBOSE) System.out.println("------------> Medina Method <----------");
+                    outputWriter.write("\n------------> Medina Method <----------" + "\n");
+                    Medina medina = new Medina(deadline, n_core, n, dag, xml_name, overrun_percent, VERBOSE);
+                    try {
+                        medina.start();
+                        Med_power[0] += medina.getCpu().power_results()[0];
+                        Med_power[1] += medina.getCpu().power_results()[1];
+                        MED_QoS += medina.QoS();
+
+                        outputWriter.write("Avg. Power= " + medina.getCpu().power_results()[0] + "\n");
+                        outputWriter.write("Peak Power= " + medina.getCpu().power_results()[1] + "\n");
+                        outputWriter.write("═════╣  QoS = " + medina.QoS() + "\n");
+
+                        temp_Med = medina.balanceCalculator();
+                        outputWriter.write("═══════════════════  Temp.  ════════════════════════ " + "\n");
+                        //Temperature Results [0] Avg. Diff. [1] Max. Diff. [2] Max. Temp. [3] Avg. Temp.
+                        outputWriter.write("Avg. Diff. = " + temp_Med[0] + "\n");
+                        outputWriter.write("Max. Diff. = " + temp_Med[1] + "\n");
+                        outputWriter.write("Max. Temp. = " + temp_Med[2] + "\n");
+                        outputWriter.write("Avg. Temp. = " + temp_Med[3] + "\n");
+
+                    } catch (Exception e) {
+                        if (VERBOSE) e.printStackTrace();
+                        outputWriter.write("[ MEDINA METHOD ] Infeasible!   " + xml_name + "\n");
+                        MED_Sch--;
+                    }
                 }
+                outputWriter.write("\n");
             }
             outputWriter.write("\n");
             outputWriter.write(">>>>>>>>>>>>> SUMMARY OF ALL DAGs <<<<<<<<<<<<" + "\n");
             outputWriter.write("Proposed Method SCH: " + PR_Sch + "\n");
+            outputWriter.write("Ansari Method SCH: " + ANS_Sch + "\n");
+            outputWriter.write("Medina Method SCH: " + MED_Sch + "\n");
 
             outputWriter.write("Proposed Method Avg. Power= " + (Pro_power[0] / PR_Sch) + "\n");
+            outputWriter.write("Ansari Method Avg. Power= " + (Ans_power[0] / ANS_Sch) + "\n");
+            outputWriter.write("Medina Method Avg. Power= " + (Med_power[0] / MED_Sch) + "\n");
 
             outputWriter.write("Proposed Method Peak Power= " + (Pro_power[1] / PR_Sch) + "\n");
+            outputWriter.write("Ansari Method Peak Power= " + (Ans_power[1] / ANS_Sch) + "\n");
+            outputWriter.write("Medina Method Peak Power= " + (Med_power[1] / MED_Sch) + "\n");
 
             outputWriter.write("Proposed Method QoS= " + (PR_QoS / PR_Sch) + "\n");
+            outputWriter.write("Ansari Method QoS= " + (ANS_QoS / ANS_Sch) + "\n");
+            outputWriter.write("Medina Method QoS= " + (MED_QoS / MED_Sch) + "\n");
 
             outputWriter.flush();
             outputWriter.close();
