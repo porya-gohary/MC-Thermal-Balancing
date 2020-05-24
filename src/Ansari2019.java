@@ -46,6 +46,29 @@ public class Ansari2019 {
         sorted_tasks = sort_tasks(dag.getVertices().toArray(new Vertex[0]).clone());
         ov_tasks = SelectOverrunTasks(dag.getNodes_HI().toArray(new Vertex[0]).clone());
         feasibility();
+        reset_schedule();
+        boolean finish = false;
+        while (!finish) {
+            boolean f = true;
+            try {
+                mainScheduling();
+            } catch (Exception e) {
+                if (VERBOSE) e.printStackTrace();
+                boolean x = drop_task();
+                if (!x) {
+                    System.out.println("Scheduling Problem!");
+                    System.exit(0);
+                }
+                f = false;
+            } finally {
+                if (f) finish = true;
+            }
+        }
+        if (VERBOSE) {
+            System.out.println("::::::::::");
+            System.out.println(xml_name + " Successfully Scheduled! QoS = " + QoS());
+            System.out.println("::::::::::");
+        }
 
     }
 
@@ -70,7 +93,6 @@ public class Ansari2019 {
                     if (cpu1.CheckTimeSlot(mappedCore, i, i + t.getWcet(1)) && (cpu1.maxCoreInterval(i, i + t.getWcet(1)) < activeCore)) {
                         cpu1.SetTaskOnCore(t.getName() + " CR" + k, mappedCore, i, i + t.getWcet(0) - 1);
                         cpu1.SetTaskOnCore(t.getName() + " CO" + k, mappedCore, i+t.getWcet(0), i + t.getWcet(1) - 1);
-                        if(VERBOSE)System.out.println(">>> "+(t.getName() + " CR"+ k)+" S: "+i+" E: "+ (i + t.getWcet(0) - 1) );
                         scheduled =true;
                         break;
                     }
@@ -87,7 +109,6 @@ public class Ansari2019 {
                     if (cpu1.CheckTimeSlot(mappedCore, i, i + t.getWcet(1)) && (cpu1.maxCoreInterval(i, i + t.getWcet(1)) < activeCore)) {
                         cpu1.SetTaskOnCore(t.getName() + " CR" + (name_number+k), mappedCore, i, i + t.getWcet(0) - 1);
                         cpu1.SetTaskOnCore(t.getName() + " CO" + (name_number+k), mappedCore, i+t.getWcet(0), i + t.getWcet(1) - 1);
-                        if(VERBOSE)System.out.println(">>> "+(t.getName() + " CR"+ (name_number+k))+" S: "+i+" E: "+ (i + t.getWcet(0) - 1) );
                         scheduled =true;
                         break;
                     }
@@ -104,6 +125,117 @@ public class Ansari2019 {
         } while (t != null);
 
         cpu1.debug("AnsariTest");
+    }
+
+
+    //Main Scheduling of System
+    public void mainScheduling() throws Exception {
+        Vertex t;
+        cpu = new CPU(deadline, n_core, dag, VERBOSE);
+
+        do {
+            t = dag.getNodebyName(get_task(true));
+            if(t==null) break;
+            int startTime = 0;
+            for (Edge e : t.getRcvEdges()) {
+                if(ov_tasks.contains(e.getSrc().getName()+" CR" + (int) (n - 1))) {
+                    if (cpu.getEndTimeTask(e.getSrc().getName() + " CO" + (int) (n - 1)) > startTime) {
+                        startTime = cpu.getEndTimeTask(e.getSrc().getName()) + 1;
+                    }
+                }else{
+                    if (cpu.getEndTimeTask(e.getSrc().getName() + " CR" + (int) (n - 1)) > startTime) {
+                        startTime = cpu.getEndTimeTask(e.getSrc().getName()) + 1;
+                    }
+                }
+            }
+
+            if(t.isHighCr()) {
+                for (int k = 0; k < (int) ceil(n / 2); k++) {
+                    int mappedCore = cpu.worstFit();
+                    boolean scheduled = false;
+                    if(ov_tasks.contains(t.getName()+" CR" + (int) (k))) {
+                        for (int i = startTime; i < deadline - t.getWcet(1); i++) {
+                            if (cpu.CheckTimeSlot(mappedCore, i, i + t.getWcet(1)) && (cpu.maxCoreInterval(i, i + t.getWcet(1)) < activeCore)) {
+                                cpu.SetTaskOnCore(t.getName() + " CR" + k, mappedCore, i, i + t.getWcet(0) - 1);
+                                cpu.SetTaskOnCore(t.getName() + " CO" + k, mappedCore, i + t.getWcet(0), i + t.getWcet(1) - 1);
+                                if (VERBOSE)
+                                    System.out.println(">>> " + (t.getName() + " CR" + k) + " S: " + i + " E: " + (i + t.getWcet(0) - 1));
+                                scheduled = true;
+                                break;
+                            }
+                        }
+
+                    }else{
+                        for (int i = startTime; i < deadline - t.getWcet(0); i++) {
+                            if (cpu.CheckTimeSlot(mappedCore, i, i + t.getWcet(0)) && (cpu.maxCoreInterval(i, i + t.getWcet(0)) < activeCore)) {
+                                cpu.SetTaskOnCore(t.getName() + " CR" + k, mappedCore, i, i + t.getWcet(0) - 1);
+                                if (VERBOSE)
+                                    System.out.println(">>> " + (t.getName() + " CR" + k) + " S: " + i + " E: " + (i + t.getWcet(0) - 1));
+                                scheduled = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!scheduled)
+                        throw new Exception("Infeasible!");
+                }
+                startTime = cpu.getEndTimeTask(t.getName() + " CO" + (int) (ceil(n / 2) - 1)) + 1;
+                int name_number = (int) ceil(n / 2);
+                for (int k = 0; k < (int) floor(n / 2); k++) {
+                    int mappedCore = cpu.worstFit();
+                    boolean scheduled = false;
+                    if(ov_tasks.contains(t.getName()+" CR" + (int) (k))) {
+                        for (int i = startTime; i < deadline - t.getWcet(1); i++) {
+                            if (cpu.CheckTimeSlot(mappedCore, i, i + t.getWcet(1)) && (cpu.maxCoreInterval(i, i + t.getWcet(1)) < activeCore)) {
+                                cpu.SetTaskOnCore(t.getName() + " CR" + (name_number + k), mappedCore, i, i + t.getWcet(0) - 1);
+                                cpu.SetTaskOnCore(t.getName() + " CO" + (name_number + k), mappedCore, i + t.getWcet(0), i + t.getWcet(1) - 1);
+                                if (VERBOSE)
+                                    System.out.println(">>> " + (t.getName() + " CR" + (name_number + k)) + " S: " + i + " E: " + (i + t.getWcet(0) - 1));
+                                scheduled = true;
+                                break;
+                            }
+                        }
+                    }else{
+                        for (int i = startTime; i < deadline - t.getWcet(0); i++) {
+                            if (cpu.CheckTimeSlot(mappedCore, i, i + t.getWcet(0)) && (cpu.maxCoreInterval(i, i + t.getWcet(0)) < activeCore)) {
+                                cpu.SetTaskOnCore(t.getName() + " CR" + (name_number + k), mappedCore, i, i + t.getWcet(0) - 1);
+                                if (VERBOSE)
+                                    System.out.println(">>> " + (t.getName() + " CR" + (name_number + k)) + " S: " + i + " E: " + (i + t.getWcet(0) - 1));
+                                scheduled = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!scheduled)
+                        throw new Exception("Infeasible!");
+
+                }
+                t.setDone(true);
+                if (VERBOSE)
+                    System.out.println(" SCH: [ " + t.getName() + " ]  ");
+
+            }else{
+                //LO Critical Tasks Scheduling.
+                int mappedCore = cpu.worstFit();
+                boolean scheduled = false;
+                for (int i = startTime; i < deadline - t.getWcet(0); i++) {
+                    if (cpu.CheckTimeSlot(mappedCore, i, i + t.getWcet(0)) && (cpu.maxCoreInterval(i, i + t.getWcet(0)) < activeCore)) {
+                        cpu.SetTaskOnCore(t.getName() + " CR" + (n-1), mappedCore, i, i + t.getWcet(0) - 1);
+                        if (VERBOSE)
+                            System.out.println(">>> LO: " + (t.getName() + " CR" + (n-1)) + " S: " + i + " E: " + (i + t.getWcet(0) - 1));
+                        scheduled = true;
+                        break;
+                    }
+                }
+                t.setDone(true);
+                if (!scheduled)
+                    throw new Exception("Infeasible!");
+
+            }
+
+
+        } while (t != null);
+        cpu.debug("AnsariMain");
     }
 
     //get the Task that must be run
@@ -185,6 +317,32 @@ public class Ansari2019 {
             }
         }
         return false;
+    }
+
+    //Reset condition of scheduled tasks
+    public void reset_schedule() {
+        for (Vertex a : sorted_tasks) {
+            a.setDone(false);
+        }
+    }
+
+    // QoS Calculator
+    public double QoS() {
+        double QoS = 0;
+        for (int i = 0; i < sorted_tasks.length; i++) {
+            if (!sorted_tasks[i].isHighCr() && sorted_tasks[i].isRun()) QoS++;
+        }
+        QoS = QoS / (sorted_tasks.length - dag.getNodes_HI().size());
+        return QoS;
+    }
+
+    public CPU getCpu() {
+        return cpu;
+    }
+
+
+    public McDAG getDag() {
+        return dag;
     }
 
 
