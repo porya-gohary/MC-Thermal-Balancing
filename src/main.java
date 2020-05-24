@@ -69,9 +69,9 @@ public class main {
         double y = 7;
 
         //Bool For make New DAGS
-        boolean create_dag = true;
+        boolean create_dag = false;
         //Number of DAG
-        int n_DAGs = 100;
+        int n_DAGs = 1;
         //MC-DAG
         McDAG dag;
         //Dag XML Name
@@ -86,7 +86,10 @@ public class main {
         //Number Of Fault
         int n_fault = 0;
 
-        double percent[] = {0.0, 0.20, 0.40, 0.60, 0.80, 1.0};
+        double n=3;
+
+//        double percent[] = {0.0, 0.20, 0.40, 0.60, 0.80, 1.0};
+        double percent[] = {0.0};
         double overrun_percent = 0.1;
         double fault_pecent = 0.0;
 
@@ -104,7 +107,8 @@ public class main {
         double temp_after[] = new double[4];
 
         //Boolean for Run Each Method
-        boolean Pro_run = true;
+        boolean Pro_run = false;
+        boolean Ans_run = true;
 
         //QoS
         double PR_QoS = 0;
@@ -248,6 +252,11 @@ public class main {
                         PR_Sch--;
                     }
 
+                }
+
+                if(Ans_run){
+                    Ansari2019 ansari2019=new Ansari2019(deadline,n_core,n,dag,xml_name,overrun_percent,VERBOSE);
+                    ansari2019.start();
                 }
             }
             outputWriter.write("\n");

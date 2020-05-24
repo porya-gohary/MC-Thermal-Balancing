@@ -1,5 +1,6 @@
 import java.util.*;
 
+import static java.lang.Math.ceil;
 import static java.lang.Math.floor;
 
 public class Ansari2019 {
@@ -29,9 +30,10 @@ public class Ansari2019 {
     Vertex sorted_tasks[];
 
 
-    public Ansari2019(int deadline, int n_core, McDAG dag, String xml_name, double overrun_percent, boolean VERBOSE) {
+    public Ansari2019(int deadline, int n_core,double n, McDAG dag, String xml_name, double overrun_percent, boolean VERBOSE) {
         this.deadline = deadline;
         this.n_core = n_core;
+        this.n=n;
         this.dag = dag;
         this.xml_name = xml_name;
         this.overrun_percent = overrun_percent;
@@ -40,6 +42,10 @@ public class Ansari2019 {
     }
 
     public void start() throws Exception {
+        //Sort Tasks from big to small by WCET LO
+        sorted_tasks = sort_tasks(dag.getVertices().toArray(new Vertex[0]).clone());
+        ov_tasks = SelectOverrunTasks(dag.getNodes_HI().toArray(new Vertex[0]).clone());
+        feasibility();
 
     }
 
@@ -49,6 +55,7 @@ public class Ansari2019 {
         CPU cpu1 = new CPU(deadline, n_core, dag, VERBOSE);
         do {
             t = dag.getNodebyName(get_task(false));
+            if(t==null) break;
             int startTime = 0;
             for (Edge e : t.getRcvEdges()) {
                 if (cpu1.getEndTimeTask(e.getSrc().getName() + " CO" + (int) (n - 1)) > startTime) {
@@ -56,18 +63,47 @@ public class Ansari2019 {
                 }
             }
 
-            for (int k = 0; k < (int) floor(n / 2); k++) {
+            for (int k = 0; k < (int) ceil(n / 2); k++) {
                 int mappedCore = cpu1.worstFit();
-                for (int i = startTime; i < deadline; i++) {
-                    if (cpu.CheckTimeSlot(mappedCore, i, i + t.getWcet(1)) && (cpu.maxCoreInterval(i, i + t.getWcet(1)) < activeCore)) {
-                        cpu.SetTaskOnCore(t.getName() + " CR" + k, mappedCore, i, i + t.getWcet(0) - 1);
-                        cpu.SetTaskOnCore(t.getName() + " CO" + k, mappedCore, i+t.getWcet(0), i + t.getWcet(1) - 1);
+                boolean scheduled=false;
+                for (int i = startTime; i < deadline-t.getWcet(1); i++) {
+                    if (cpu1.CheckTimeSlot(mappedCore, i, i + t.getWcet(1)) && (cpu1.maxCoreInterval(i, i + t.getWcet(1)) < activeCore)) {
+                        cpu1.SetTaskOnCore(t.getName() + " CR" + k, mappedCore, i, i + t.getWcet(0) - 1);
+                        cpu1.SetTaskOnCore(t.getName() + " CO" + k, mappedCore, i+t.getWcet(0), i + t.getWcet(1) - 1);
+                        if(VERBOSE)System.out.println(">>> "+(t.getName() + " CR"+ k)+" S: "+i+" E: "+ (i + t.getWcet(0) - 1) );
+                        scheduled =true;
+                        break;
                     }
                 }
+                if(!scheduled)
+                    throw new Exception("Infeasible!");
             }
-            //TODO Add Scheduling Faulty phase
+            startTime = cpu1.getEndTimeTask(t.getName() + " CO"+(int) (ceil(n / 2)-1)) + 1;
+            int name_number=(int) ceil(n / 2);
+            for (int k = 0; k < (int) floor(n / 2); k++) {
+                int mappedCore = cpu1.worstFit();
+                boolean scheduled=false;
+                for (int i = startTime; i < deadline-t.getWcet(1); i++) {
+                    if (cpu1.CheckTimeSlot(mappedCore, i, i + t.getWcet(1)) && (cpu1.maxCoreInterval(i, i + t.getWcet(1)) < activeCore)) {
+                        cpu1.SetTaskOnCore(t.getName() + " CR" + (name_number+k), mappedCore, i, i + t.getWcet(0) - 1);
+                        cpu1.SetTaskOnCore(t.getName() + " CO" + (name_number+k), mappedCore, i+t.getWcet(0), i + t.getWcet(1) - 1);
+                        if(VERBOSE)System.out.println(">>> "+(t.getName() + " CR"+ (name_number+k))+" S: "+i+" E: "+ (i + t.getWcet(0) - 1) );
+                        scheduled =true;
+                        break;
+                    }
+                }
+                if(!scheduled)
+                    throw new Exception("Infeasible!");
+
+            }
+            t.setDone(true);
+            if (VERBOSE)
+                System.out.println(" SCH: [ "+t.getName() + " ]  ");
+
 
         } while (t != null);
+
+        cpu1.debug("AnsariTest");
     }
 
     //get the Task that must be run
