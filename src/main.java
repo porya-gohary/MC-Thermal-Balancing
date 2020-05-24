@@ -71,7 +71,7 @@ public class main {
         //Bool For make New DAGS
         boolean create_dag = false;
         //Number of DAG
-        int n_DAGs = 1;
+        int n_DAGs = 10;
         //MC-DAG
         McDAG dag;
         //Dag XML Name
@@ -98,20 +98,24 @@ public class main {
 
         //Scheduling Results:
         int PR_Sch;
+        int ANS_Sch;
 
         // Power Results
         double Pro_power[] = new double[2];
+        double Ans_power[] = new double[2];
 
         //Temperature Results [0] Avg. Diff. [1] Max. Diff. [2] Max. Temp. [3] Avg. Temp.
         double temp_before[] = new double[4];
         double temp_after[] = new double[4];
+        double temp_Ans[] = new double[4];
 
         //Boolean for Run Each Method
-        boolean Pro_run = false;
+        boolean Pro_run = true;
         boolean Ans_run = true;
 
         //QoS
         double PR_QoS = 0;
+        double ANS_QoS = 0;
 
         //Benchmarks Name
         String benchmark[] = {"Blackscholes1", "Blackscholes2", "Blackscholes3", "Bodytrack1", "Bodytrack2", "Canneal1", "Dedup1", "Ferret1", "Ferret2", "Fluidanimate1", "Fluidanimate2", "Freqmine1", "Freqmine2", "Streamcluster1", "Streamcluster2", "Swaptions1", "Swaptions2", "x264"};
@@ -203,6 +207,7 @@ public class main {
             outputWriter = new BufferedWriter(new FileWriter("OV" + overrun_percent + "F" + fault_pecent + "//" + "Summary.txt"));
 
             PR_Sch = n_DAGs;
+            ANS_Sch = n_DAGs;
 
             for (int i = 1; i <= n_DAGs; i++) {
                 progressBar.setPercent(i * 100 / n_DAGs);
@@ -255,8 +260,33 @@ public class main {
                 }
 
                 if(Ans_run){
+                    progressBar.setMethod("Ansari Method");
+                    if(VERBOSE) System.out.println("------------> Ansari Method <----------");
+                    outputWriter.write("------------> Ansari Method <----------" + "\n");
                     Ansari2019 ansari2019=new Ansari2019(deadline,n_core,n,dag,xml_name,overrun_percent,VERBOSE);
-                    ansari2019.start();
+                    try {
+                        ansari2019.start();
+                        Ans_power[0] += ansari2019.getCpu().power_results()[0];
+                        Ans_power[1] += ansari2019.getCpu().power_results()[1];
+                        ANS_QoS += ansari2019.QoS();
+
+                        outputWriter.write("Avg. Power= " + ansari2019.getCpu().power_results()[0] + "\n");
+                        outputWriter.write("Peak Power= " + ansari2019.getCpu().power_results()[1] + "\n");
+                        outputWriter.write("═════╣  QoS = " + ansari2019.QoS() + "\n");
+
+                        temp_Ans = ansari2019.balanceCalculator();
+                        outputWriter.write("═══════════════════  Temp.  ════════════════════════ "+ "\n");
+                        //Temperature Results [0] Avg. Diff. [1] Max. Diff. [2] Max. Temp. [3] Avg. Temp.
+                        outputWriter.write("Avg. Diff. = " + temp_Ans[0] + "\n");
+                        outputWriter.write("Max. Diff. = " + temp_Ans[1] + "\n");
+                        outputWriter.write("Max. Temp. = " + temp_Ans[2] + "\n");
+                        outputWriter.write("Avg. Temp. = " + temp_Ans[3] + "\n");
+
+                    } catch (Exception e) {
+                        if (VERBOSE) e.printStackTrace();
+                        outputWriter.write("[ ANSARI METHOD ] Infeasible!   " + xml_name + "\n");
+                        ANS_Sch--;
+                    }
                 }
             }
             outputWriter.write("\n");

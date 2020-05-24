@@ -1,3 +1,6 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.*;
 
 import static java.lang.Math.ceil;
@@ -28,6 +31,15 @@ public class Ansari2019 {
     boolean VERBOSE = false;
     Set<Vertex> HIv;
     Vertex sorted_tasks[];
+
+    String pathSeparator = File.separator;
+
+    //HotSpot location and information
+    String hotspot_path = "HotSpot" + pathSeparator + "hotspot";
+    String hotspot_config = "HotSpot" + pathSeparator + "configs" + pathSeparator;
+    String floorplan = "HotSpot" + pathSeparator + "floorplans" + pathSeparator;
+    String powertrace = "HotSpot" + pathSeparator + "powertrace" + pathSeparator;
+    String thermaltrace = "HotSpot" + pathSeparator + "thermaltrace" + pathSeparator + "thermal.ttrace";
 
 
     public Ansari2019(int deadline, int n_core,double n, McDAG dag, String xml_name, double overrun_percent, boolean VERBOSE) {
@@ -334,6 +346,96 @@ public class Ansari2019 {
         }
         QoS = QoS / (sorted_tasks.length - dag.getNodes_HI().size());
         return QoS;
+    }
+
+    public double[] balanceCalculator() {
+        //Temperature Results [0] Avg. Diff. [1] Max. Diff. [2] Max. Temp. [3] Avg. Temp.
+        double temp[]= new double[4];
+        double Max=0;
+        double Avg=0;
+
+        hotspot_config = "HotSpot" + pathSeparator + "configs" + pathSeparator;
+        floorplan = "HotSpot" + pathSeparator + "floorplans" + pathSeparator;
+        powertrace = "HotSpot" + pathSeparator + "powertrace" + pathSeparator;
+        HotSpot hotSpot = new HotSpot(hotspot_path, VERBOSE);
+        HS_input_creator hs_input_creator = new HS_input_creator(cpu);
+        try {
+            hs_input_creator.Save("HotSpot", "powertrace", "Alpha" + cpu.getN_Cores() + ".ptrace", cpu.Endtime(-1));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        hotspot_config += "hotspot_" + cpu.getN_Cores() + ".config";
+        floorplan += "Alpha" + cpu.getN_Cores() + ".flp";
+        powertrace += "Alpha" + cpu.getN_Cores() + ".ptrace";
+        hotSpot.run(hotspot_config, floorplan, powertrace, thermaltrace);
+
+        String mFolder = "HotSpot";
+        String sFolder = "thermaltrace";
+        String filename = "thermal.ttrace";
+        File thermalFile = null;
+        double MaxDiff=0;
+        try {
+            thermalFile = new File(mFolder + pathSeparator + sFolder + pathSeparator + filename);
+            Scanner Reader = new Scanner(thermalFile);
+            //Reader.hasNextLine()
+            double diff = 0;
+            Reader.nextLine();
+            for (int j = 0; j < cpu.Endtime(-1); j++) {
+                String data = Reader.nextLine();
+                String Sdatavalue[] = data.split("\t");
+                double value[] = new double[cpu.getN_Cores()];
+                for (int i = 0; i < cpu.getN_Cores(); i++) {
+                    value[i] = Double.parseDouble(Sdatavalue[i]);
+                }
+
+                if(getMax(value)>Max) Max = getMax(value);
+                Avg+=getMax(value);
+
+                diff += getMax(value) - getMin(value);
+                if(getMax(value) - getMin(value)>MaxDiff) MaxDiff =getMax(value) - getMin(value);
+
+            }
+            Reader.close();
+            if (VERBOSE) {
+                System.out.println("Max. Different= " + MaxDiff);
+                System.out.println("Avg. Different= " + (diff / cpu.Endtime(-1)));
+            }
+            //Temperature Results [0] Avg. Diff. [1] Max. Diff. [2] Max. Temp. [3] Avg. Temp.
+            temp[0]=(diff / cpu.Endtime(-1));
+            temp[1]=MaxDiff;
+            temp[2]= Max;
+            temp[3]=Avg/ cpu.Endtime(-1);
+        } catch (FileNotFoundException e) {
+            if (VERBOSE) {
+                System.out.println("An error occurred in Reading Thermal Trace File.");
+                System.out.println("Path: " + thermalFile.getAbsolutePath());
+                e.printStackTrace();
+            }
+        }
+        return temp;
+    }
+
+    // Method for getting the minimum value
+    public double getMin(double[] inputArray) {
+        double minValue = inputArray[0];
+        for (int i = 1; i < inputArray.length; i++) {
+            if (inputArray[i] < minValue) {
+                minValue = inputArray[i];
+            }
+        }
+        return minValue;
+    }
+
+    //Method for getting the maximum value
+    public double getMax(double[] inputArray) {
+        double maxValue = inputArray[0];
+        for (int i = 1; i < inputArray.length; i++) {
+            if (inputArray[i] > maxValue) {
+                maxValue = inputArray[i];
+            }
+        }
+        return maxValue;
     }
 
     public CPU getCpu() {

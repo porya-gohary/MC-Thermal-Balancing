@@ -14,6 +14,7 @@ public class ProgressBar extends Thread {
         String finished = "████████████████████";
         String unfinished = "                    ";
         String working = "...";
+        String working2 = "   ";
         int x = 0;
         Instant end = Instant.now();
         while (showProgress) {
@@ -29,7 +30,7 @@ public class ProgressBar extends Thread {
                     + timeElapsed.get(TimeUnit.MINUTES)+":"
                     + timeElapsed.get(TimeUnit.SECONDS)
                     +" )"
-                    +"  "+ working.substring(0, x / 10)
+                    +"  "+ working.substring(0, x / 10)+ working2.substring(0, 3-x / 10)
                     + "\r");
             if (x < 39) x++;
             else x = 0;
