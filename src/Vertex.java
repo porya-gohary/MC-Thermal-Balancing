@@ -205,6 +205,10 @@ public abstract class Vertex implements Comparable<Vertex>, Cloneable, Serializa
 			return (this.getWcet(0)) -(obj.getWcet(0));
 		}
 
+		else if(stackTraceElements[6].getClassName().equals("Ansari2019")) {
+			return (this.getWcet(0)) -(obj.getWcet(0));
+		}
+
 		// compareTo returns a negative number if this is less than obj,
 		// a positive number if this is greater than obj,
 		// and 0 if they are equal.

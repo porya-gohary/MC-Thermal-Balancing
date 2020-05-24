@@ -58,7 +58,7 @@ public class main {
         }
 
         //Number of system cores
-        int n_core = 4;
+        int n_core = 9;
 
         //Graph Deadline
         int deadline;
@@ -71,7 +71,7 @@ public class main {
         //Bool For make New DAGS
         boolean create_dag = false;
         //Number of DAG
-        int n_DAGs = 10;
+        int n_DAGs = 1;
         //MC-DAG
         McDAG dag;
         //Dag XML Name
@@ -110,8 +110,9 @@ public class main {
         double temp_Ans[] = new double[4];
 
         //Boolean for Run Each Method
-        boolean Pro_run = true;
-        boolean Ans_run = true;
+        boolean Pro_run = false;
+        boolean Ans_run = false;
+        boolean Med_run = true;
 
         //QoS
         double PR_QoS = 0;
@@ -287,6 +288,11 @@ public class main {
                         outputWriter.write("[ ANSARI METHOD ] Infeasible!   " + xml_name + "\n");
                         ANS_Sch--;
                     }
+                }
+
+                if(Med_run){
+                    Medina medina=new Medina(deadline,n_core,n,dag,xml_name,overrun_percent,VERBOSE);
+                    medina.start();
                 }
             }
             outputWriter.write("\n");
