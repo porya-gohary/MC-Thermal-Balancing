@@ -99,12 +99,14 @@ public class main {
         //Scheduling Results:
         int PR_Sch;
         int ANS_Sch;
+        int SAL_Sch;
         int MED_Sch;
         int MEDR_Sch;
 
         // Power Results
         double Pro_power[] = new double[2];
         double Ans_power[] = new double[2];
+        double Sal_power[] = new double[2];
         double Med_power[] = new double[2];
         double MedR_power[] = new double[2];
 
@@ -112,18 +114,21 @@ public class main {
         double temp_before[] = new double[4];
         double temp_after[] = new double[4];
         double temp_Ans[] = new double[4];
+        double temp_Sal[] = new double[4];
         double temp_Med[] = new double[4];
         double temp_MedR[] = new double[4];
 
         //Boolean for Run Each Method
         boolean Pro_run = false;
         boolean Ans_run = false;
+        boolean Sal_run = true;
         boolean Med_run = false;
-        boolean MedR_run = true;
+        boolean MedR_run = false;
 
         //QoS
         double PR_QoS = 0;
         double ANS_QoS = 0;
+        double SAL_QoS = 0;
         double MED_QoS = 0;
         double MEDR_QoS = 0;
 
@@ -218,6 +223,7 @@ public class main {
 
             PR_Sch = n_DAGs;
             ANS_Sch = n_DAGs;
+            SAL_Sch = n_DAGs;
             MED_Sch = n_DAGs;
             MEDR_Sch = n_DAGs;
 
@@ -301,6 +307,36 @@ public class main {
                     }
                 }
 
+                if(Sal_run){
+                    progressBar.setMethod("Salehi Method");
+                    if (VERBOSE) System.out.println("------------> Medina Replication Method <----------");
+                    outputWriter.write("\n------------> Salehi Method <----------" + "\n");
+                    Salehi salehi =new Salehi(deadline,n_core,n,dag,xml_name,fault_pecent,VERBOSE);
+                    try {
+                        salehi.start();
+                        Sal_power[0] += salehi.getCpu().power_results()[0];
+                        Sal_power[1] += salehi.getCpu().power_results()[1];
+                        SAL_QoS += salehi.QoS();
+
+                        outputWriter.write("Avg. Power= " + salehi.getCpu().power_results()[0] + "\n");
+                        outputWriter.write("Peak Power= " + salehi.getCpu().power_results()[1] + "\n");
+                        outputWriter.write("═════╣  QoS = " + salehi.QoS() + "\n");
+
+                        temp_Sal = salehi.balanceCalculator();
+                        outputWriter.write("═══════════════════  Temp.  ════════════════════════ " + "\n");
+                        //Temperature Results [0] Avg. Diff. [1] Max. Diff. [2] Max. Temp. [3] Avg. Temp.
+                        outputWriter.write("Avg. Diff. = " + temp_Sal[0] + "\n");
+                        outputWriter.write("Max. Diff. = " + temp_Sal[1] + "\n");
+                        outputWriter.write("Max. Temp. = " + temp_Sal[2] + "\n");
+                        outputWriter.write("Avg. Temp. = " + temp_Sal[3] + "\n");
+
+                    }catch (Exception e) {
+                        if (VERBOSE) e.printStackTrace();
+                        outputWriter.write("[ SALEHI METHOD ] Infeasible!   " + xml_name + "\n");
+                        SAL_Sch--;
+                    }
+                }
+
                 if (Med_run) {
                     progressBar.setMethod("Medina Method");
                     if (VERBOSE) System.out.println("------------> Medina Method <----------");
@@ -362,6 +398,8 @@ public class main {
                 }
 
 
+
+
                 outputWriter.write("\n");
             }
             outputWriter.write("\n");
@@ -369,18 +407,22 @@ public class main {
             outputWriter.write("Proposed Method SCH: " + PR_Sch + "\n");
             outputWriter.write("Ansari Method SCH: " + ANS_Sch + "\n");
             outputWriter.write("Medina Method SCH: " + MED_Sch + "\n");
+            outputWriter.write("Medina Replication Method SCH: " + MEDR_Sch + "\n");
 
             outputWriter.write("Proposed Method Avg. Power= " + (Pro_power[0] / PR_Sch) + "\n");
             outputWriter.write("Ansari Method Avg. Power= " + (Ans_power[0] / ANS_Sch) + "\n");
             outputWriter.write("Medina Method Avg. Power= " + (Med_power[0] / MED_Sch) + "\n");
+            outputWriter.write("Medina Replication Method Avg. Power= " + (MedR_power[0] / MEDR_Sch) + "\n");
 
             outputWriter.write("Proposed Method Peak Power= " + (Pro_power[1] / PR_Sch) + "\n");
             outputWriter.write("Ansari Method Peak Power= " + (Ans_power[1] / ANS_Sch) + "\n");
             outputWriter.write("Medina Method Peak Power= " + (Med_power[1] / MED_Sch) + "\n");
+            outputWriter.write("Medina Replication Method Peak Power= " + (MedR_power[1] / MEDR_Sch) + "\n");
 
             outputWriter.write("Proposed Method QoS= " + (PR_QoS / PR_Sch) + "\n");
             outputWriter.write("Ansari Method QoS= " + (ANS_QoS / ANS_Sch) + "\n");
             outputWriter.write("Medina Method QoS= " + (MED_QoS / MED_Sch) + "\n");
+            outputWriter.write("Medina Replication Method QoS= " + (MEDR_QoS / MEDR_Sch) + "\n");
 
             outputWriter.flush();
             outputWriter.close();
