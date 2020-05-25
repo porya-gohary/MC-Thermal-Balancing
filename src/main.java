@@ -58,7 +58,7 @@ public class main {
         }
 
         //Number of system cores
-        int n_core = 9;
+        int n_core = 4;
 
         //Graph Deadline
         int deadline;
@@ -100,27 +100,32 @@ public class main {
         int PR_Sch;
         int ANS_Sch;
         int MED_Sch;
+        int MEDR_Sch;
 
         // Power Results
         double Pro_power[] = new double[2];
         double Ans_power[] = new double[2];
         double Med_power[] = new double[2];
+        double MedR_power[] = new double[2];
 
         //Temperature Results [0] Avg. Diff. [1] Max. Diff. [2] Max. Temp. [3] Avg. Temp.
         double temp_before[] = new double[4];
         double temp_after[] = new double[4];
         double temp_Ans[] = new double[4];
         double temp_Med[] = new double[4];
+        double temp_MedR[] = new double[4];
 
         //Boolean for Run Each Method
         boolean Pro_run = false;
         boolean Ans_run = false;
-        boolean Med_run = true;
+        boolean Med_run = false;
+        boolean MedR_run = true;
 
         //QoS
         double PR_QoS = 0;
         double ANS_QoS = 0;
         double MED_QoS = 0;
+        double MEDR_QoS = 0;
 
         //Benchmarks Name
         String benchmark[] = {"Blackscholes1", "Blackscholes2", "Blackscholes3", "Bodytrack1", "Bodytrack2", "Canneal1", "Dedup1", "Ferret1", "Ferret2", "Fluidanimate1", "Fluidanimate2", "Freqmine1", "Freqmine2", "Streamcluster1", "Streamcluster2", "Swaptions1", "Swaptions2", "x264"};
@@ -214,6 +219,7 @@ public class main {
             PR_Sch = n_DAGs;
             ANS_Sch = n_DAGs;
             MED_Sch = n_DAGs;
+            MEDR_Sch = n_DAGs;
 
             for (int i = 1; i <= n_DAGs; i++) {
                 progressBar.setPercent(i * 100 / n_DAGs);
@@ -324,6 +330,38 @@ public class main {
                         MED_Sch--;
                     }
                 }
+
+                if (MedR_run) {
+                    progressBar.setMethod("Medina Rep. Method");
+                    if (VERBOSE) System.out.println("------------> Medina Replication Method <----------");
+                    outputWriter.write("\n------------> Medina Replication Method <----------" + "\n");
+                    MedinaReplication medinaReplication = new MedinaReplication(deadline, n_core, n, dag, xml_name, overrun_percent, VERBOSE);
+                    try {
+                        medinaReplication.start();
+                        MedR_power[0] += medinaReplication.getCpu().power_results()[0];
+                        MedR_power[1] += medinaReplication.getCpu().power_results()[1];
+                        MEDR_QoS += medinaReplication.QoS();
+
+                        outputWriter.write("Avg. Power= " + medinaReplication.getCpu().power_results()[0] + "\n");
+                        outputWriter.write("Peak Power= " + medinaReplication.getCpu().power_results()[1] + "\n");
+                        outputWriter.write("═════╣  QoS = " + medinaReplication.QoS() + "\n");
+
+                        temp_MedR = medinaReplication.balanceCalculator();
+                        outputWriter.write("═══════════════════  Temp.  ════════════════════════ " + "\n");
+                        //Temperature Results [0] Avg. Diff. [1] Max. Diff. [2] Max. Temp. [3] Avg. Temp.
+                        outputWriter.write("Avg. Diff. = " + temp_MedR[0] + "\n");
+                        outputWriter.write("Max. Diff. = " + temp_MedR[1] + "\n");
+                        outputWriter.write("Max. Temp. = " + temp_MedR[2] + "\n");
+                        outputWriter.write("Avg. Temp. = " + temp_MedR[3] + "\n");
+
+                    } catch (Exception e) {
+                        if (VERBOSE) e.printStackTrace();
+                        outputWriter.write("[ MEDINA Replication METHOD ] Infeasible!   " + xml_name + "\n");
+                        MEDR_Sch--;
+                    }
+                }
+
+
                 outputWriter.write("\n");
             }
             outputWriter.write("\n");

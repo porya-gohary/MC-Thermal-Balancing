@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Scanner;
 
-public class Medina {
+public class MedinaReplication {
     //Deadline
     int deadline;
     //Number of CPU Core
@@ -35,7 +35,7 @@ public class Medina {
     String powertrace = "HotSpot" + pathSeparator + "powertrace" + pathSeparator;
     String thermaltrace = "HotSpot" + pathSeparator + "thermaltrace" + pathSeparator + "thermal.ttrace";
 
-    public Medina(int deadline, int n_core, double n, McDAG dag, String xml_name, double overrun_percent, boolean VERBOSE) {
+    public MedinaReplication(int deadline, int n_core, double n, McDAG dag, String xml_name, double overrun_percent, boolean VERBOSE) {
         this.deadline = deadline;
         this.n_core = n_core;
         this.n = n;
@@ -48,6 +48,7 @@ public class Medina {
     public void start() throws Exception {
         //Sort Tasks
         sorted_tasks = sort_tasks(dag.getVertices().toArray(new Vertex[0]).clone());
+        reset_schedule();
         feasibility();
         reset_schedule();
         boolean finish = false;
@@ -79,15 +80,16 @@ public class Medina {
                 if (t == null) break;
                 int startTime = 0;
                 for (Edge e : t.getRcvEdges()) {
-                    if (cpu.getEndTimeTask(e.getSrc().getName() + " CR"+1) > startTime) {
-                        startTime = cpu.getEndTimeTask(e.getSrc().getName()+ " CR"+1) + 1;
+                    if (cpu.getEndTimeTask(e.getSrc().getName() + " CR"+e.getSrc().getReplica()) > startTime) {
+                        startTime = cpu.getEndTimeTask(e.getSrc().getName()+ " CR"+e.getSrc().getReplica()) + 1;
                     }
                 }
                 boolean scheduled = false;
                 for (int i = startTime; i < deadline - t.getWcet(0); i++) {
                     for (int j = 0; j < n_core; j++) {
                         if (cpu.CheckTimeSlot(j, i, i + t.getWcet(0))) {
-                            cpu.SetTaskOnCore(t.getName() + " CR"+1, j, i, i + t.getWcet(0) - 1);;
+                            cpu.SetTaskOnCore(t.getName() + " CR"+(t.getScheduled() + 1), j, i, i + t.getWcet(0) - 1);;
+                            t.setScheduled(t.getScheduled() + 1);
                             scheduled = true;
                             break;
                         }
@@ -95,10 +97,10 @@ public class Medina {
                     if(scheduled) break;
                 }
                 if (VERBOSE)
-                    System.out.println("MED SCH: [ "+t.getName() + " ]  ");
+                    System.out.println("MED SCH: [ "+t.getName() + " "+t.getScheduled()+" ]  ");
                 if (!scheduled)
                     throw new Exception("Infeasible!");
-                t.setDone(true);
+
 
             } while (t != null);
         }else{
@@ -115,8 +117,9 @@ public class Medina {
                 for (int i = startTime; i < deadline - t.getWcet(1); i++) {
                     for (int j = 0; j < n_core; j++) {
                         if (cpu.CheckTimeSlot(j, i, i + t.getWcet(1))) {
-                            cpu.SetTaskOnCore(t.getName() + " CR"+1, j, i, i + t.getWcet(0) - 1);
-                            cpu.SetTaskOnCore(t.getName() + " CO"+1, j, i + t.getWcet(0), i + t.getWcet(1) - 1);
+                            cpu.SetTaskOnCore(t.getName() + " CR"+(t.getScheduled() + 1), j, i, i + t.getWcet(0) - 1);
+                            cpu.SetTaskOnCore(t.getName() + " CO"+(t.getScheduled() + 1), j, i + t.getWcet(0), i + t.getWcet(1) - 1);
+                            t.setScheduled(t.getScheduled() + 1);
                             scheduled = true;
                             break;
                         }
@@ -125,7 +128,6 @@ public class Medina {
                 }
                 if (!scheduled)
                     throw new Exception("Infeasible!");
-                t.setDone(true);
 
             } while (t != null);
         }
@@ -140,16 +142,17 @@ public class Medina {
             if (t == null) break;
             int startTime = 0;
             for (Edge e : t.getRcvEdges()) {
-                if (cpu1.getEndTimeTask(e.getSrc().getName() + " CO") > startTime) {
-                    startTime = cpu1.getEndTimeTask(e.getSrc().getName()+ " CO") + 1;
+                if (cpu1.getEndTimeTask(e.getSrc().getName() + " CO"+e.getSrc().getReplica()) > startTime) {
+                    startTime = cpu1.getEndTimeTask(e.getSrc().getName()+ " CO"+e.getSrc().getReplica()) + 1;
                 }
             }
             boolean scheduled = false;
             for (int i = startTime; i < deadline - t.getWcet(1); i++) {
                 for (int j = 0; j < n_core; j++) {
                     if (cpu1.CheckTimeSlot(j, i, i + t.getWcet(1))) {
-                        cpu1.SetTaskOnCore(t.getName() + " CR", j, i, i + t.getWcet(0) - 1);
-                        cpu1.SetTaskOnCore(t.getName() + " CO", j, i + t.getWcet(0), i + t.getWcet(1) - 1);
+                        cpu1.SetTaskOnCore(t.getName() + " CR"+(t.getScheduled() + 1), j, i, i + t.getWcet(0) - 1);
+                        cpu1.SetTaskOnCore(t.getName() + " CO"+(t.getScheduled() + 1), j, i + t.getWcet(0), i + t.getWcet(1) - 1);
+                        t.setScheduled(t.getScheduled() + 1);
                         scheduled = true;
                         break;
                     }
@@ -158,7 +161,6 @@ public class Medina {
             }
             if (!scheduled)
                 throw new Exception("Infeasible!");
-            t.setDone(true);
 
         } while (t != null);
         cpu1.debug("MedinaTest");
@@ -221,6 +223,7 @@ public class Medina {
     public void reset_schedule() {
         for (Vertex a : sorted_tasks) {
             a.setDone(false);
+            a.setScheduled(0);
         }
     }
 
@@ -332,4 +335,5 @@ public class Medina {
     public McDAG getDag() {
         return dag;
     }
+
 }
