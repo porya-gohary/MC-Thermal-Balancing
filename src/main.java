@@ -74,7 +74,7 @@ public class main {
         //Bool For make New DAGS
         boolean create_dag = true;
         //Number of DAG
-        int n_DAGs = 50;
+        int n_DAGs = 2;
         //MC-DAG
         McDAG dag;
         //Dag XML Name
@@ -143,7 +143,7 @@ public class main {
         double t_inf[] = {50.92, 49.42, 49.79, 50.67, 54.49, 51.89, 51.29, 54.11, 54.47, 54.45, 57.49, 50.31, 52.68, 54.92, 55.18, 52.89, 51.27, 54.16};
 
         //Possible Voltages
-        double v[] = {1, 1.115, 1.3};
+        double v[] = {0.9, 1.1, 1.2};
         //Possible Frequencies
         int freq[] = {800, 1000, 1200};
 
@@ -208,6 +208,8 @@ public class main {
 
             }
         }
+
+        /*
         ProgressBar progressBar = new ProgressBar();
         progressBar.start();
 //        for (int i = 0; i <= 100; i++) {
@@ -461,8 +463,11 @@ public class main {
         }
         progressBar.stop();
 
+*/
 
     }
+
+
 
 
     public static void relibility_creator(McDAG dag, String rel_name, double n) throws IOException {

@@ -169,23 +169,52 @@ public class Reliability_cal {
 
     public void select_freq(Vertex task){
         int j=0;
-        for (int i = 0; i < task.getReplica()*freq.length; i++) {
+//        System.out.println(task.getReplica()*freq.length);
+        for (int i = 0; i < task.getReplica()*(freq.length-1); i++) {
             double r_sum=1;
-            task.decrease_VF(j);
+
             for (int k = 0; k < task.getReplica(); k++) {
-                v_i = v[Arrays.asList(freq).indexOf(task.getMin_freq(j))];
+                v_i = v[Arrays.binarySearch(freq,task.getMin_freq(j))];
                 rou = v_i / v_max;
+//                System.out.println("rou= "+rou);
                 rou_min = v_min / v_max;
+//                System.out.println("rou Min= "+rou_min);
                 landa = (landa0 * pow(10, ((d * (1 - rou)) / (1 - rou_min))));
+                landa = (-1) * landa;
                 t_i_HI = t_min_HI * freq[freq.length - 1] / task.getMin_freq(j);
                 double r_HI = exp((landa * t_i_HI));
+//                System.out.println(r_HI);
                 r_sum = r_sum * (1-r_HI);
+
             }
             r_sum=1-r_sum;
+            System.out.println("Before R[Task]= "+r_sum+" -------- "+Arrays.toString(task.getAllFreq()));
+
+
+
+            task.decrease_VF(j);
+            for (int k = 0; k < task.getReplica(); k++) {
+                v_i = v[Arrays.binarySearch(freq,task.getMin_freq(j))];
+                rou = v_i / v_max;
+//                System.out.println("rou= "+rou);
+                rou_min = v_min / v_max;
+//                System.out.println("rou Min= "+rou_min);
+                landa = (landa0 * pow(10, ((d * (1 - rou)) / (1 - rou_min))));
+                landa = (-1) * landa;
+                t_i_HI = t_min_HI * freq[freq.length - 1] / task.getMin_freq(j);
+                double r_HI = exp((landa * t_i_HI));
+//                System.out.println(r_HI);
+                r_sum = r_sum * (1-r_HI);
+
+            }
+            r_sum=1-r_sum;
+            System.out.println("After R[Task]= "+r_sum+" -------- "+Arrays.toString(task.getAllFreq()));
             if (r_sum<task.getReliability()){
                 task.increase_VF(j);
                 return;
             }
+            if(j==task.getReplica()-1) j=0;
+            else j++;
         }
     }
 

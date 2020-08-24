@@ -34,7 +34,7 @@ public abstract class Vertex implements Comparable<Vertex>, Cloneable, Serializa
 	private int[] wcets;
 	
 	private int cpFromNode[];
-	
+
 	private Set<Edge> rcvEdges;
 	private Set<Edge> sndEdges;
 	private int LPL;
@@ -61,7 +61,7 @@ public abstract class Vertex implements Comparable<Vertex>, Cloneable, Serializa
 
 	private double t_inf;
 
-	double voltage[] = {1, 1.115, 1.3};
+	double voltage[] = {0.9, 1.1, 1.2};
 	//Possible Frequencies
 	int freq[] = {800, 1000, 1200};
 
@@ -325,13 +325,19 @@ public abstract class Vertex implements Comparable<Vertex>, Cloneable, Serializa
 	}
 
 	public void decrease_VF(int i){
-		min_freq[i]=freq[Arrays.asList(freq).indexOf(min_freq[i])-1];
-		min_voltage[i]=voltage[Arrays.asList(voltage).indexOf(min_voltage[i])-1];
+		System.out.println("<DECREASE>");
+//		System.out.println(Arrays.toString(freq));
+//		System.out.println(Arrays.binarySearch(freq,1200));
+		min_freq[i]=freq[Arrays.binarySearch(freq,min_freq[i])-1];
+		min_voltage[i]=voltage[Arrays.binarySearch(voltage,min_voltage[i])-1];
 	}
 
 	public void increase_VF(int i){
-		min_freq[i]=freq[Arrays.asList(freq).indexOf(min_freq[i])+1];
-		min_voltage[i]=voltage[Arrays.asList(voltage).indexOf(min_voltage[i])+1];
+		min_freq[i]=freq[Arrays.binarySearch(freq,min_freq[i])+1];
+		min_voltage[i]=voltage[Arrays.binarySearch(voltage,min_voltage[i])+1];
+	}
+	public int[] getAllFreq(){
+		return min_freq;
 	}
 
 	public int getTSP_Active() {return TSP_Active;	}
@@ -504,7 +510,9 @@ public abstract class Vertex implements Comparable<Vertex>, Cloneable, Serializa
 	public void setReplica(int replica) {
 		this.replica = replica;
 		min_freq=new int[replica];
+		min_voltage= new Double[replica];
 		Arrays.fill(min_freq, max_freq);
+		Arrays.fill(min_voltage, max_v);
 	}
 
 	public double getT_inf() {

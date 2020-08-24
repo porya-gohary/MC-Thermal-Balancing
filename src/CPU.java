@@ -228,44 +228,7 @@ public class CPU {
                 String HI = v.getHI_name();
                 StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
                 //System.out.println(stackTraceElements[2].getClassName());
-                if (stackTraceElements[2].getClassName().equals("secondApproach")) {
-                    if (m <= (ceil(n / 2) - 1)) {
-                        Double r[] = new Double[v.getRunningTimeHI(max_freq, v.getMin_freq()) - v.getRunningTimeLO(max_freq, v.getMin_freq())];
-                        BufferedReader reader;
-                        File file = new File(location + v.getMin_freq() + "//" + HI + ".txt");
-                        reader = new BufferedReader(new FileReader(file));
-                        int i = 0;
-                        String line = reader.readLine();
-                        while (line != null) {
-                            r[i] = Double.parseDouble(line);
-                            line = reader.readLine();
-                            i++;
-                        }
-                        int l = 0;
-                        for (int k = Start; k < Start + r.length; k++) {
-                            power[Core][k] = r[l];
-                            l++;
-                        }
-                    } else {
-                        Double r[] = new Double[v.getRunningTimeHI(max_freq, max_freq) - v.getRunningTimeLO(max_freq, max_freq)];
-                        BufferedReader reader;
-                        File file = new File(location + max_freq + "//" + HI + ".txt");
-                        reader = new BufferedReader(new FileReader(file));
-                        int i = 0;
-                        String line = reader.readLine();
-                        while (line != null) {
-                            r[i] = Double.parseDouble(line);
-                            line = reader.readLine();
-                            i++;
-                        }
-                        int l = 0;
-                        for (int k = Start; k < Start + r.length; k++) {
-                            power[Core][k] = r[l];
-                            l++;
-                        }
-                    }
 
-                } else {
                     //System.out.println(v.getName()+" <> "+HI+"    ### "+(v.getWcet(1)-v.getWcet(0)));
                     Double r[] = new Double[v.getWcet(1) - v.getWcet(0)];
                     BufferedReader reader;
@@ -283,7 +246,7 @@ public class CPU {
                         power[Core][k] = r[l];
                         l++;
                     }
-                }
+
 //                System.out.println("P START  :: "+Start+"   "+(Start+r.length));
 //                System.out.println("<POWER> "+v.getName()+"  "+v.getHI_name()+"   "+(v.getWcet(1)-v.getWcet(0)));
 //                for (int j = 0; j < r.length ; j++) {
@@ -297,9 +260,9 @@ public class CPU {
         } else {
             if (m <= (ceil(n / 2) - 1)) {
                 String LO = v.getLO_name();
-                Double r[] = new Double[(v.getWcet(0) * max_freq / v.getMin_freq())];
+                Double r[] = new Double[(v.getWcet(0) * max_freq / v.getMin_freq(m))];
                 BufferedReader reader;
-                File file = new File(location + v.getMin_freq() + "//" + LO + ".txt");
+                File file = new File(location + v.getMin_freq(m) + "//" + LO + ".txt");
                 reader = new BufferedReader(new FileReader(file));
                 int i = 0;
                 String line = reader.readLine();
