@@ -177,10 +177,10 @@ public class proposedMothod {
                     s = a;
                     t[k] = s.getName();
                     k++;
-                    if (k == n_core) break;
+                    if (k == n_core/2) break;
                 }
             }
-        } while (k != n_core && s != null);
+        } while (k != n_core/2 && s != null);
         return t;
     }
 

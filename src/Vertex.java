@@ -16,6 +16,7 @@
  *******************************************************************************/
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -38,8 +39,8 @@ public abstract class Vertex implements Comparable<Vertex>, Cloneable, Serializa
 	private Set<Edge> sndEdges;
 	private int LPL;
 	private Double reliability;
-	private Double min_voltage;
-	private int min_freq ;
+	private Double [] min_voltage;
+	private int[] min_freq;
 	private int TSP_Active;
 	//Safe Start Time
 	private int SST;
@@ -60,6 +61,12 @@ public abstract class Vertex implements Comparable<Vertex>, Cloneable, Serializa
 
 	private double t_inf;
 
+	double voltage[] = {1, 1.115, 1.3};
+	//Possible Frequencies
+	int freq[] = {800, 1000, 1200};
+
+	int max_freq =freq[freq.length-1];
+	double max_v =voltage[voltage.length-1];
 
 
 	public Vertex (int id, String name, int nbLevels) {
@@ -198,15 +205,37 @@ public abstract class Vertex implements Comparable<Vertex>, Cloneable, Serializa
 			int temp1,temp2;
 			temp1= Math.max(this.getWcet(0),this.getWcet(1));
 			temp2= Math.max(obj.getWcet(0),obj.getWcet(1));
-			return (temp1) -(temp2);
+			if( (temp1) -(temp2) == 0)
+				return 0;
+			else if ((temp1) -(temp2) > 0)
+				return 1;
+			else
+				return -1;
 		}
 
 		else if(stackTraceElements[6].getClassName().equals("proposedMothod")) {
-			return (this.getWcet(0)) -(obj.getWcet(0));
+//			System.out.println("..........PR..........");
+			if( this.getWcet(0) -obj.getWcet(0) == 0) {
+//				System.out.println(this.getName()+" | "+this.getWcet(0) + " **** "+obj.getName() +" | "+obj.getWcet(0)+">> 0");
+				return 0;
+			}
+			else if (this.getWcet(0) -obj.getWcet(0) > 0){
+//				System.out.println(this.getName()+" | "+this.getWcet(0) + " **** "+obj.getName() +" | "+obj.getWcet(0)+">> 1");
+				return 1;
+			}
+			else {
+//				System.out.println(this.getName()+" | "+this.getWcet(0) + " **** "+obj.getName() +" | "+obj.getWcet(0)+">> -1");
+				return -1;
+			}
 		}
 
 		else if(stackTraceElements[6].getClassName().equals("Ansari2019")) {
-			return (this.getWcet(0)) -(obj.getWcet(0));
+			if( this.getWcet(0) -obj.getWcet(0) == 0)
+				return 0;
+			else if (this.getWcet(0) -obj.getWcet(0) > 0)
+				return 1;
+			else
+				return -1;
 		}
 
 		// compareTo returns a negative number if this is less than obj,
@@ -287,12 +316,22 @@ public abstract class Vertex implements Comparable<Vertex>, Cloneable, Serializa
 		return reliability;
 	}
 
-	public Double getMin_voltage() {
-		return min_voltage;
+	public Double getMin_voltage(int i) {
+		return min_voltage[i];
 	}
 
-	public void setMin_voltage(Double min_voltage) {
-		this.min_voltage = min_voltage;
+	public void setMin_voltage(Double min_voltage , int i) {
+		this.min_voltage[i] = min_voltage;
+	}
+
+	public void decrease_VF(int i){
+		min_freq[i]=freq[Arrays.asList(freq).indexOf(min_freq[i])-1];
+		min_voltage[i]=voltage[Arrays.asList(voltage).indexOf(min_voltage[i])-1];
+	}
+
+	public void increase_VF(int i){
+		min_freq[i]=freq[Arrays.asList(freq).indexOf(min_freq[i])+1];
+		min_voltage[i]=voltage[Arrays.asList(voltage).indexOf(min_voltage[i])+1];
 	}
 
 	public int getTSP_Active() {return TSP_Active;	}
@@ -398,19 +437,19 @@ public abstract class Vertex implements Comparable<Vertex>, Cloneable, Serializa
 		return (int) (getWcet(1)*maxFreq/currentfreq);
 	}
 
-	public int getMin_freq() {
-		return min_freq;
+	public int getMin_freq(int i) {
+		return min_freq[i];
 	}
 
-	public void setMin_freq(int min_freq) {
-		this.min_freq = min_freq;
+	public void setMin_freq(int min_freq, int i) {
+		this.min_freq[i] = min_freq;
 	}
 
 	public void debug(){
 		System.out.println("---------> DEBUG MODE <---------");
 		System.out.println("              " + this.getName());
-		System.out.println("Reliability= "+this.getReliability()+"   Min.Voltage= "+this.getMin_voltage());
-		System.out.println("Min. Freq.= "+this.getMin_freq());
+		System.out.println("Reliability= "+this.getReliability()+"   Min.Voltage= "+ Arrays.toString(min_voltage));
+		System.out.println("Min. Freq.= "+ Arrays.toString(min_freq));
 		System.out.println("Max. Active Core= "+this.getTSP_Active());
 		System.out.println("Safe Start Time= "+this.getSST());
 
@@ -464,6 +503,8 @@ public abstract class Vertex implements Comparable<Vertex>, Cloneable, Serializa
 
 	public void setReplica(int replica) {
 		this.replica = replica;
+		min_freq=new int[replica];
+		Arrays.fill(min_freq, max_freq);
 	}
 
 	public double getT_inf() {

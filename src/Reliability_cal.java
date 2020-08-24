@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import static java.lang.Math.*;
 
@@ -162,7 +163,30 @@ public class Reliability_cal {
 
         //Set Number of Replica  + main task
         task.setReplica(replica_upper_bound + 1);
+        select_freq(task);
+        task.debug();
+    }
 
+    public void select_freq(Vertex task){
+        int j=0;
+        for (int i = 0; i < task.getReplica()*freq.length; i++) {
+            double r_sum=1;
+            task.decrease_VF(j);
+            for (int k = 0; k < task.getReplica(); k++) {
+                v_i = v[Arrays.asList(freq).indexOf(task.getMin_freq(j))];
+                rou = v_i / v_max;
+                rou_min = v_min / v_max;
+                landa = (landa0 * pow(10, ((d * (1 - rou)) / (1 - rou_min))));
+                t_i_HI = t_min_HI * freq[freq.length - 1] / task.getMin_freq(j);
+                double r_HI = exp((landa * t_i_HI));
+                r_sum = r_sum * (1-r_HI);
+            }
+            r_sum=1-r_sum;
+            if (r_sum<task.getReliability()){
+                task.increase_VF(j);
+                return;
+            }
+        }
     }
 
 

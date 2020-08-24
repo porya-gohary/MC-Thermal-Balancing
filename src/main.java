@@ -1,6 +1,9 @@
 import org.apache.commons.cli.*;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Random;
 
 import static java.lang.Math.pow;
@@ -58,20 +61,20 @@ public class main {
         }
 
         //Number of system cores
-        int n_core = 4;
+        int n_core = 36 ;
 
         //Graph Deadline
         int deadline;
         //deadline Coefficient
-        double x = 5;
+        double x = 12;
 
         //Reliability Coefficient
         double y = 7;
 
         //Bool For make New DAGS
-        boolean create_dag = false;
+        boolean create_dag = true;
         //Number of DAG
-        int n_DAGs = 1;
+        int n_DAGs = 50;
         //MC-DAG
         McDAG dag;
         //Dag XML Name
@@ -88,8 +91,10 @@ public class main {
 
         double n = 3;
 
-//        double percent[] = {0.0, 0.20, 0.40, 0.60, 0.80, 1.0};
-        double percent[] = {0.0};
+        Path temp;
+
+        double percent[] = {0.0, 0.20, 0.40, 0.60, 0.80, 1.0};
+//        double percent[] = {0.0};
         double overrun_percent = 0.1;
         double fault_pecent = 0.0;
 
@@ -119,11 +124,11 @@ public class main {
         double temp_MedR[] = new double[4];
 
         //Boolean for Run Each Method
-        boolean Pro_run = false;
-        boolean Ans_run = false;
+        boolean Pro_run = true;
+        boolean Ans_run = true;
         boolean Sal_run = true;
-        boolean Med_run = false;
-        boolean MedR_run = false;
+        boolean Med_run = true;
+        boolean MedR_run = true;
 
         //QoS
         double PR_QoS = 0;
@@ -157,6 +162,7 @@ public class main {
                 benchmark_mapping.mapping();
                 benchmark_mapping.cal_LPL();
                 deadline = benchmark_mapping.cal_deadline(x);
+                if (VERBOSE) System.out.println("Deadline = " + deadline + "\n");
 
 
                 outputWriter.write(">>>>>>>>>> ::: DAG " + xml_name + " ::: <<<<<<<<<<" + "\n");
@@ -178,7 +184,7 @@ public class main {
             outputWriter.close();
 
 
-            WriteObjectToFile(All_DAG.clone(), "DAGs.txt");
+//            WriteObjectToFile(All_DAG.clone(), "DAGs.txt");
             WriteObjectToFile(All_deadline, "Deadline.txt");
 
         } else {
@@ -268,10 +274,14 @@ public class main {
                         outputWriter.write("Max. Diff. = " + temp_after[1] + "\n");
                         outputWriter.write("Max. Temp. = " + temp_after[2] + "\n");
                         outputWriter.write("Avg. Temp. = " + temp_after[3] + "\n");
+                        outputWriter.write("End Time = " + proposedMothod.getCpu().Endtime(-1) + "\n");
+                        temp = Files.move(Paths.get("HotSpot" + pathSeparator + "thermaltrace"+ pathSeparator +"thermal.ttrace"),
+                                Paths.get("OV" + overrun_percent + "F" + fault_pecent + pathSeparator + xml_name + pathSeparator + "PR_thermal.txt"));
 
                     } catch (Exception e) {
                         if (VERBOSE) e.printStackTrace();
                         outputWriter.write("[ PROPOSED METHOD ] Infeasible!   " + xml_name + "\n");
+                        outputWriter.write(e.getStackTrace().toString()+ "\n");
                         PR_Sch--;
                     }
 
@@ -299,6 +309,10 @@ public class main {
                         outputWriter.write("Max. Diff. = " + temp_Ans[1] + "\n");
                         outputWriter.write("Max. Temp. = " + temp_Ans[2] + "\n");
                         outputWriter.write("Avg. Temp. = " + temp_Ans[3] + "\n");
+                        outputWriter.write("End Time = " + ansari2019.getCpu().Endtime(-1) + "\n");
+                        temp = Files.move(Paths.get("HotSpot" + pathSeparator + "thermaltrace"+ pathSeparator +"thermal.ttrace"),
+                                Paths.get("OV" + overrun_percent + "F" + fault_pecent + pathSeparator + xml_name + pathSeparator + "ANS_thermal.txt"));
+
 
                     } catch (Exception e) {
                         if (VERBOSE) e.printStackTrace();
@@ -329,6 +343,11 @@ public class main {
                         outputWriter.write("Max. Diff. = " + temp_Sal[1] + "\n");
                         outputWriter.write("Max. Temp. = " + temp_Sal[2] + "\n");
                         outputWriter.write("Avg. Temp. = " + temp_Sal[3] + "\n");
+                        outputWriter.write("End Time = " + salehi.getCpu().Endtime(-1) + "\n");
+
+                        temp = Files.move(Paths.get("HotSpot" + pathSeparator + "thermaltrace"+ pathSeparator +"thermal.ttrace"),
+                                Paths.get("OV" + overrun_percent + "F" + fault_pecent + pathSeparator + xml_name + pathSeparator + "SAL_thermal.txt"));
+
 
                     }catch (Exception e) {
                         if (VERBOSE) e.printStackTrace();
@@ -359,6 +378,11 @@ public class main {
                         outputWriter.write("Max. Diff. = " + temp_Med[1] + "\n");
                         outputWriter.write("Max. Temp. = " + temp_Med[2] + "\n");
                         outputWriter.write("Avg. Temp. = " + temp_Med[3] + "\n");
+                        outputWriter.write("End Time = " + medina.getCpu().Endtime(-1) + "\n");
+
+                        temp = Files.move(Paths.get("HotSpot" + pathSeparator + "thermaltrace"+ pathSeparator +"thermal.ttrace"),
+                                Paths.get("OV" + overrun_percent + "F" + fault_pecent + pathSeparator + xml_name + pathSeparator + "MED_thermal.txt"));
+
 
                     } catch (Exception e) {
                         if (VERBOSE) e.printStackTrace();
@@ -389,6 +413,10 @@ public class main {
                         outputWriter.write("Max. Diff. = " + temp_MedR[1] + "\n");
                         outputWriter.write("Max. Temp. = " + temp_MedR[2] + "\n");
                         outputWriter.write("Avg. Temp. = " + temp_MedR[3] + "\n");
+                        outputWriter.write("End Time = " + medinaReplication.getCpu().Endtime(-1) + "\n");
+                        temp = Files.move(Paths.get("HotSpot" + pathSeparator + "thermaltrace"+ pathSeparator +"thermal.ttrace"),
+                                Paths.get("OV" + overrun_percent + "F" + fault_pecent + pathSeparator + xml_name + pathSeparator + "MedR_thermal.txt"));
+
 
                     } catch (Exception e) {
                         if (VERBOSE) e.printStackTrace();
@@ -406,21 +434,25 @@ public class main {
             outputWriter.write(">>>>>>>>>>>>> SUMMARY OF ALL DAGs <<<<<<<<<<<<" + "\n");
             outputWriter.write("Proposed Method SCH: " + PR_Sch + "\n");
             outputWriter.write("Ansari Method SCH: " + ANS_Sch + "\n");
+            outputWriter.write("Salehi Method SCH: " + SAL_Sch + "\n");
             outputWriter.write("Medina Method SCH: " + MED_Sch + "\n");
             outputWriter.write("Medina Replication Method SCH: " + MEDR_Sch + "\n");
 
             outputWriter.write("Proposed Method Avg. Power= " + (Pro_power[0] / PR_Sch) + "\n");
             outputWriter.write("Ansari Method Avg. Power= " + (Ans_power[0] / ANS_Sch) + "\n");
+            outputWriter.write("Salehi Method Avg. Power= " + (Sal_power[0] / SAL_Sch) + "\n");
             outputWriter.write("Medina Method Avg. Power= " + (Med_power[0] / MED_Sch) + "\n");
             outputWriter.write("Medina Replication Method Avg. Power= " + (MedR_power[0] / MEDR_Sch) + "\n");
 
             outputWriter.write("Proposed Method Peak Power= " + (Pro_power[1] / PR_Sch) + "\n");
             outputWriter.write("Ansari Method Peak Power= " + (Ans_power[1] / ANS_Sch) + "\n");
+            outputWriter.write("Salehi Method Peak Power= " + (Sal_power[1] / SAL_Sch) + "\n");
             outputWriter.write("Medina Method Peak Power= " + (Med_power[1] / MED_Sch) + "\n");
             outputWriter.write("Medina Replication Method Peak Power= " + (MedR_power[1] / MEDR_Sch) + "\n");
 
             outputWriter.write("Proposed Method QoS= " + (PR_QoS / PR_Sch) + "\n");
             outputWriter.write("Ansari Method QoS= " + (ANS_QoS / ANS_Sch) + "\n");
+            outputWriter.write("Salehi Method QoS= " + (SAL_QoS / SAL_Sch) + "\n");
             outputWriter.write("Medina Method QoS= " + (MED_QoS / MED_Sch) + "\n");
             outputWriter.write("Medina Replication Method QoS= " + (MEDR_QoS / MEDR_Sch) + "\n");
 

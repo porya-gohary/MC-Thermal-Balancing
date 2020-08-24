@@ -42,7 +42,7 @@ public class HS_input_creator {
         //Add Power of each core
         for (int i = 0; i <= end; i++) {
             for (int j = 0; j < cpu.getN_Cores(); j++) {
-                String s = (j != cpu.getN_Cores() - 1) ? cpu.get_power(j,i) + "\t" : cpu.get_power(j,i) + "\n";
+                String s = (j != cpu.getN_Cores() - 1) ? (cpu.get_power(j,i)/1.5) + "\t" : (cpu.get_power(j,i)/1.5) + "\n";
                 outputWriter.write(s);
             }
         }
