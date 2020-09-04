@@ -64,7 +64,7 @@ public class benchmark_mapping {
         do {
             // m = rn.nextInt((int) (n *n*1.6));
             m = rn.nextInt((int) (n * n * 1.6));
-        } while (m == 0);
+        } while (m < 3);
         return (v[v.length - 1].getLPL() * m);
     }
 

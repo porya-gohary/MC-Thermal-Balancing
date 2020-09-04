@@ -29,7 +29,7 @@ public class HS_input_creator {
         end = cpu.getDeadline();
     }
 
-    public void Save(String mFolder, String Folder, String Filename, int end) throws IOException {
+    public void Save_HS(String mFolder, String Folder, String Filename, int end) throws IOException {
         this.end = end;
         BufferedWriter outputWriter = null;
         outputWriter = new BufferedWriter(new FileWriter(mFolder + "//" + Folder + "//" + Filename));
@@ -43,6 +43,32 @@ public class HS_input_creator {
         for (int i = 0; i <= end; i++) {
             for (int j = 0; j < cpu.getN_Cores(); j++) {
                 String s = (j != cpu.getN_Cores() - 1) ? (cpu.get_power(j,i)/1.5) + "\t" : (cpu.get_power(j,i)/1.5) + "\n";
+                outputWriter.write(s);
+            }
+        }
+        outputWriter.flush();
+        outputWriter.close();
+    }
+
+    //Make input files for MaTex
+    public void Save(String mFolder, String Folder, String Filename, int end) throws IOException {
+        this.end = end;
+        BufferedWriter outputWriter = null;
+        outputWriter = new BufferedWriter(new FileWriter(mFolder + "//" + Folder + "//" + Filename));
+        //Add HotSpot Header
+        String s = "time" + "\t";
+        outputWriter.write(s);
+        for (int i = 0; i < cpu.getN_Cores(); i++) {
+            s = (i != cpu.getN_Cores() - 1) ? "core_" + i + "\t" : "core_" + i + "\n";
+            outputWriter.write(s);
+        }
+
+        //Add Power of each core
+        for (int i = 0; i <= end; i++) {
+            s = i + "\t";
+            outputWriter.write(s);
+            for (int j = 0; j < cpu.getN_Cores(); j++) {
+                s = (j != cpu.getN_Cores() - 1) ? (cpu.get_power(j,i)/1.5) + "\t" : (cpu.get_power(j,i)/1.5) + "\n";
                 outputWriter.write(s);
             }
         }

@@ -128,13 +128,15 @@ public class CPU {
 
     //Set Task to Core
     public void SetTaskOnCore(String Task, int Core, int Start, int End) throws Exception {
-        // System.out.println(Task+"  "+ Start+"  "+End);
+
         try {
             for (int i = Start; i <= End; i++) {
                 core[Core][i] = Task;
             }
         } catch (Exception e) {
             if (VERBOSE) System.err.println(Task + "  ⚠ ⚠ Infeasible!");
+            if (VERBOSE)  System.out.println("<!> Task "+Task+"  "+ Start+"  "+End);
+            if (VERBOSE)  System.out.println("<!!!> Deadline "+deadline);
             if (VERBOSE) e.printStackTrace();
             throw new Exception("Infeasible!");
             //System.exit(1);

@@ -29,6 +29,7 @@ public class main {
     static String pathSeparator = File.separator;
     static boolean VERBOSE = false;
 
+
     public static void main(String[] args) throws Exception {
 
         // --> Command-line Args
@@ -61,12 +62,12 @@ public class main {
         }
 
         //Number of system cores
-        int n_core = 36 ;
+        int n_core = 16 ;
 
         //Graph Deadline
         int deadline;
         //deadline Coefficient
-        double x = 12;
+        double x = 30;
 
         //Reliability Coefficient
         double y = 7;
@@ -74,7 +75,7 @@ public class main {
         //Bool For make New DAGS
         boolean create_dag = true;
         //Number of DAG
-        int n_DAGs = 2;
+        int n_DAGs = 100;
         //MC-DAG
         McDAG dag;
         //Dag XML Name
@@ -141,6 +142,9 @@ public class main {
         String benchmark[] = {"Blackscholes1", "Blackscholes2", "Blackscholes3", "Bodytrack1", "Bodytrack2", "Canneal1", "Dedup1", "Ferret1", "Ferret2", "Fluidanimate1", "Fluidanimate2", "Freqmine1", "Freqmine2", "Streamcluster1", "Streamcluster2", "Swaptions1", "Swaptions2", "x264"};
         int benchmark_time[] = {40, 30, 50, 20, 50, 60, 100, 50, 70, 65, 100, 35, 80, 45, 85, 30, 20, 100};
         double t_inf[] = {50.92, 49.42, 49.79, 50.67, 54.49, 51.89, 51.29, 54.11, 54.47, 54.45, 57.49, 50.31, 52.68, 54.92, 55.18, 52.89, 51.27, 54.16};
+
+        double [][]peak_power = {{45.1820133,27.2266533,27.2250333,47.8884033,68.8520133,47.5627833,45.3773133,68.3694333,67.7015433,74.7559233,61.2237933,47.6432433,49.4941833,56.3823333,51.5399733,52.5211533,52.5430233,49.2146433},
+                                {50.202237,30.251837,30.250037,53.209337,76.502237,52.847537,50.419237,75.966037,75.223937,83.062137,68.026437,52.936937,54.993537,62.647037,57.266637,58.356837,58.381137,54.682937}};
 
         //Possible Voltages
         double v[] = {0.9, 1.1, 1.2};
@@ -209,7 +213,7 @@ public class main {
             }
         }
 
-        /*
+
         ProgressBar progressBar = new ProgressBar();
         progressBar.start();
 //        for (int i = 0; i <= 100; i++) {
@@ -255,6 +259,10 @@ public class main {
                         proposedMothod.start();
                         onlineBalancer onlineBalancer = new onlineBalancer(proposedMothod.getBps(), proposedMothod.getCpu(), proposedMothod.getDag(), VERBOSE);
                         temp_before = onlineBalancer.balanceCalculator();
+                        temp = Files.move(Paths.get("MatEx-1.0" + pathSeparator + "thermaltrace"+ pathSeparator +"thermal.ttrace"),
+                                Paths.get("OV" + overrun_percent + "F" + fault_pecent + pathSeparator + xml_name + pathSeparator + "PR_thermal[Before].txt"));
+
+                        //AFTER BALANCING
                         onlineBalancer.run();
                         temp_after = onlineBalancer.balanceCalculator();
                         Pro_power[0] += proposedMothod.getCpu().power_results()[0];
@@ -277,8 +285,8 @@ public class main {
                         outputWriter.write("Max. Temp. = " + temp_after[2] + "\n");
                         outputWriter.write("Avg. Temp. = " + temp_after[3] + "\n");
                         outputWriter.write("End Time = " + proposedMothod.getCpu().Endtime(-1) + "\n");
-                        temp = Files.move(Paths.get("HotSpot" + pathSeparator + "thermaltrace"+ pathSeparator +"thermal.ttrace"),
-                                Paths.get("OV" + overrun_percent + "F" + fault_pecent + pathSeparator + xml_name + pathSeparator + "PR_thermal.txt"));
+                        temp = Files.move(Paths.get("MatEx-1.0" + pathSeparator + "thermaltrace"+ pathSeparator +"thermal.ttrace"),
+                                Paths.get("OV" + overrun_percent + "F" + fault_pecent + pathSeparator + xml_name + pathSeparator + "PR_thermal[After].txt"));
 
                     } catch (Exception e) {
                         if (VERBOSE) e.printStackTrace();
@@ -312,7 +320,7 @@ public class main {
                         outputWriter.write("Max. Temp. = " + temp_Ans[2] + "\n");
                         outputWriter.write("Avg. Temp. = " + temp_Ans[3] + "\n");
                         outputWriter.write("End Time = " + ansari2019.getCpu().Endtime(-1) + "\n");
-                        temp = Files.move(Paths.get("HotSpot" + pathSeparator + "thermaltrace"+ pathSeparator +"thermal.ttrace"),
+                        temp = Files.move(Paths.get("MatEx-1.0" + pathSeparator + "thermaltrace"+ pathSeparator +"thermal.ttrace"),
                                 Paths.get("OV" + overrun_percent + "F" + fault_pecent + pathSeparator + xml_name + pathSeparator + "ANS_thermal.txt"));
 
 
@@ -347,7 +355,7 @@ public class main {
                         outputWriter.write("Avg. Temp. = " + temp_Sal[3] + "\n");
                         outputWriter.write("End Time = " + salehi.getCpu().Endtime(-1) + "\n");
 
-                        temp = Files.move(Paths.get("HotSpot" + pathSeparator + "thermaltrace"+ pathSeparator +"thermal.ttrace"),
+                        temp = Files.move(Paths.get("MatEx-1.0" + pathSeparator + "thermaltrace"+ pathSeparator +"thermal.ttrace"),
                                 Paths.get("OV" + overrun_percent + "F" + fault_pecent + pathSeparator + xml_name + pathSeparator + "SAL_thermal.txt"));
 
 
@@ -382,7 +390,7 @@ public class main {
                         outputWriter.write("Avg. Temp. = " + temp_Med[3] + "\n");
                         outputWriter.write("End Time = " + medina.getCpu().Endtime(-1) + "\n");
 
-                        temp = Files.move(Paths.get("HotSpot" + pathSeparator + "thermaltrace"+ pathSeparator +"thermal.ttrace"),
+                        temp = Files.move(Paths.get("MatEx-1.0" + pathSeparator + "thermaltrace"+ pathSeparator +"thermal.ttrace"),
                                 Paths.get("OV" + overrun_percent + "F" + fault_pecent + pathSeparator + xml_name + pathSeparator + "MED_thermal.txt"));
 
 
@@ -416,7 +424,7 @@ public class main {
                         outputWriter.write("Max. Temp. = " + temp_MedR[2] + "\n");
                         outputWriter.write("Avg. Temp. = " + temp_MedR[3] + "\n");
                         outputWriter.write("End Time = " + medinaReplication.getCpu().Endtime(-1) + "\n");
-                        temp = Files.move(Paths.get("HotSpot" + pathSeparator + "thermaltrace"+ pathSeparator +"thermal.ttrace"),
+                        temp = Files.move(Paths.get("MatEx-1.0" + pathSeparator + "thermaltrace"+ pathSeparator +"thermal.ttrace"),
                                 Paths.get("OV" + overrun_percent + "F" + fault_pecent + pathSeparator + xml_name + pathSeparator + "MedR_thermal.txt"));
 
 
@@ -431,6 +439,7 @@ public class main {
 
 
                 outputWriter.write("\n");
+                outputWriter.flush();
             }
             outputWriter.write("\n");
             outputWriter.write(">>>>>>>>>>>>> SUMMARY OF ALL DAGs <<<<<<<<<<<<" + "\n");
@@ -463,7 +472,7 @@ public class main {
         }
         progressBar.stop();
 
-*/
+
 
     }
 

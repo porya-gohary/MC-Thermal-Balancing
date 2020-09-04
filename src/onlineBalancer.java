@@ -33,11 +33,11 @@ public class onlineBalancer {
     String pathSeparator = File.separator;
 
     //HotSpot location and information
-    String hotspot_path = "HotSpot" + pathSeparator + "hotspot";
-    String hotspot_config = "HotSpot" + pathSeparator + "configs" + pathSeparator;
-    String floorplan = "HotSpot" + pathSeparator + "floorplans" + pathSeparator;
-    String powertrace = "HotSpot" + pathSeparator + "powertrace" + pathSeparator;
-    String thermaltrace = "HotSpot" + pathSeparator + "thermaltrace" + pathSeparator + "thermal.ttrace";
+    String hotspot_path = "MatEx-1.0" + pathSeparator + "MatEx";
+    String hotspot_config = "MatEx-1.0" + pathSeparator + "configs" + pathSeparator;
+    String floorplan = "MatEx-1.0" + pathSeparator + "floorplans" + pathSeparator;
+    String powertrace = "MatEx-1.0" + pathSeparator + "powertrace" + pathSeparator;
+    String thermaltrace = "MatEx-1.0" + pathSeparator + "thermaltrace" + pathSeparator + "thermal.ttrace";
 
     public onlineBalancer(Integer[] bps, CPU cpu, McDAG dag, boolean VERBOSE) {
         this.bps = bps;
@@ -53,33 +53,33 @@ public class onlineBalancer {
 
         for (int i = 0; i < bps.length - 1; i++) {
             try {
-                hs_input_creator.Save("HotSpot", "powertrace", "Alpha" + cpu.getN_Cores() + ".ptrace", bps[i]);
+                hs_input_creator.Save("MatEx-1.0", "powertrace", "Alpha" + cpu.getN_Cores() + ".ptrace", bps[i]);
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            hotspot_config = "HotSpot" + pathSeparator + "configs" + pathSeparator;
-            floorplan = "HotSpot" + pathSeparator + "floorplans" + pathSeparator;
-            powertrace = "HotSpot" + pathSeparator + "powertrace" + pathSeparator;
+            hotspot_config = "MatEx-1.0" + pathSeparator + "configs" + pathSeparator;
+            floorplan = "MatEx-1.0" + pathSeparator + "floorplans" + pathSeparator;
+            powertrace = "MatEx-1.0" + pathSeparator + "powertrace" + pathSeparator;
 
-            hotspot_config += "hotspot_" + cpu.getN_Cores() + ".config";
+            hotspot_config += "matex_" + cpu.getN_Cores() + ".config";
             floorplan += "Alpha" + cpu.getN_Cores() + ".flp";
             powertrace += "Alpha" + cpu.getN_Cores() + ".ptrace";
             hotSpot.run(hotspot_config, floorplan, powertrace, thermaltrace);
 
-            boolean sw[]=new boolean[cpu.getN_Cores()];
+            boolean sw[] = new boolean[cpu.getN_Cores()];
             Arrays.fill(sw, true);
-            double pre[]=new double[cpu.getN_Cores()];
+            double pre[] = new double[cpu.getN_Cores()];
 
             for (int j = 0; j < cpu.getN_Cores(); j++) {
-                pre[j]=predict(j, bps[i], bps[i + 1] - 1, get_cur_temp(bps[i])[j]);
+                pre[j] = predict(j, bps[i], bps[i + 1] - 1, get_cur_temp(bps[i])[j]);
             }
 
-            for (int j = 0; j < cpu.getN_Cores()/2; j++) {
+            for (int j = 0; j < cpu.getN_Cores() / 2; j++) {
                 int MinIndex = getMinIndex(pre, sw);
                 int MaxIndex = getMaxIndex(pre, sw);
-                sw[MaxIndex]=false;
-                sw[MinIndex]=false;
+                sw[MaxIndex] = false;
+                sw[MinIndex] = false;
                 cpu.remap(MaxIndex, MinIndex, bps[i], bps[i + 1]);
             }
         }
@@ -109,7 +109,7 @@ public class onlineBalancer {
     }
 
     public double[] get_cur_temp(int time) {
-        String mFolder = "HotSpot";
+        String mFolder = "MatEx-1.0";
         String sFolder = "thermaltrace";
         String filename = "thermal.ttrace";
         File thermalFile = null;
@@ -117,16 +117,24 @@ public class onlineBalancer {
         try {
             thermalFile = new File(mFolder + pathSeparator + sFolder + pathSeparator + filename);
             Scanner Reader = new Scanner(thermalFile);
+            //For Header Line
             Reader.nextLine();
-            for (int j = 0; j < cpu.Endtime(-1); j++) {
+            //For Zero Line
+            Reader.nextLine();
+//            for (int j = 0; j < cpu.Endtime(-1); j++) {
+            int j =0;
+            while(Reader.hasNext()){
                 String data = Reader.nextLine();
+                int k = 0;
                 if (j == time) {
                     String Sdatavalue[] = data.split("\t");
-                    for (int i = 0; i < cpu.getN_Cores(); i++) {
-                        value[i] = Double.parseDouble(Sdatavalue[i]);
+                    for (int i = 1; i < cpu.getN_Cores() + 1; i++) {
+                        value[k] = Double.parseDouble(Sdatavalue[i]);
+                        k++;
                     }
                     break;
                 }
+                j++;
             }
             Reader.close();
 
@@ -142,31 +150,31 @@ public class onlineBalancer {
 
     public double[] balanceCalculator() {
         //Temperature Results [0] Avg. Diff. [1] Max. Diff. [2] Max. Temp. [3] Avg. Temp.
-        double temp[]= new double[4];
-        double Max=0;
-        double Avg=0;
+        double temp[] = new double[4];
+        double Max = 0;
+        double Avg = 0;
 
-        hotspot_config = "HotSpot" + pathSeparator + "configs" + pathSeparator;
-        floorplan = "HotSpot" + pathSeparator + "floorplans" + pathSeparator;
-        powertrace = "HotSpot" + pathSeparator + "powertrace" + pathSeparator;
+        hotspot_config = "MatEx-1.0" + pathSeparator + "configs" + pathSeparator;
+        floorplan = "MatEx-1.0" + pathSeparator + "floorplans" + pathSeparator;
+        powertrace = "MatEx-1.0" + pathSeparator + "powertrace" + pathSeparator;
         HotSpot hotSpot = new HotSpot(hotspot_path, VERBOSE);
         HS_input_creator hs_input_creator = new HS_input_creator(cpu);
         try {
-            hs_input_creator.Save("HotSpot", "powertrace", "Alpha" + cpu.getN_Cores() + ".ptrace", cpu.Endtime(-1));
+            hs_input_creator.Save("MatEx-1.0", "powertrace", "Alpha" + cpu.getN_Cores() + ".ptrace", cpu.Endtime(-1));
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        hotspot_config += "hotspot_" + cpu.getN_Cores() + ".config";
+        hotspot_config += "matex_" + cpu.getN_Cores() + ".config";
         floorplan += "Alpha" + cpu.getN_Cores() + ".flp";
         powertrace += "Alpha" + cpu.getN_Cores() + ".ptrace";
         hotSpot.run(hotspot_config, floorplan, powertrace, thermaltrace);
 
-        String mFolder = "HotSpot";
+        String mFolder = "MatEx-1.0";
         String sFolder = "thermaltrace";
         String filename = "thermal.ttrace";
         File thermalFile = null;
-        double MaxDiff=0;
+        double MaxDiff = 0;
         try {
             thermalFile = new File(mFolder + pathSeparator + sFolder + pathSeparator + filename);
             Scanner Reader = new Scanner(thermalFile);
@@ -177,15 +185,17 @@ public class onlineBalancer {
                 String data = Reader.nextLine();
                 String Sdatavalue[] = data.split("\t");
                 double value[] = new double[cpu.getN_Cores()];
-                for (int i = 0; i < cpu.getN_Cores(); i++) {
-                    value[i] = Double.parseDouble(Sdatavalue[i]);
+                int k=0;
+                for (int i = 1; i < cpu.getN_Cores()+1; i++) {
+                    value[k] = Double.parseDouble(Sdatavalue[i]);
+                    k++;
                 }
 
-                if(getMax(value)>Max) Max = getMax(value);
-                Avg+=getMax(value);
+                if (getMax(value) > Max) Max = getMax(value);
+                Avg += getMax(value);
 
                 diff += getMax(value) - getMin(value);
-                if(getMax(value) - getMin(value)>MaxDiff) MaxDiff =getMax(value) - getMin(value);
+                if (getMax(value) - getMin(value) > MaxDiff) MaxDiff = getMax(value) - getMin(value);
 
             }
             Reader.close();
@@ -194,10 +204,10 @@ public class onlineBalancer {
                 System.out.println("Avg. Different= " + (diff / cpu.Endtime(-1)));
             }
             //Temperature Results [0] Avg. Diff. [1] Max. Diff. [2] Max. Temp. [3] Avg. Temp.
-            temp[0]=(diff / cpu.Endtime(-1));
-            temp[1]=MaxDiff;
-            temp[2]= Max;
-            temp[3]=Avg/ cpu.Endtime(-1);
+            temp[0] = (diff / cpu.Endtime(-1));
+            temp[1] = MaxDiff;
+            temp[2] = Max;
+            temp[3] = Avg / cpu.Endtime(-1);
         } catch (FileNotFoundException e) {
             if (VERBOSE) {
                 System.out.println("An error occurred in Reading Thermal Trace File.");
@@ -220,13 +230,13 @@ public class onlineBalancer {
     }
 
     //Method for getting the maximum available value index
-    public int getMaxIndex(double[] inputArray, boolean[] available){
+    public int getMaxIndex(double[] inputArray, boolean[] available) {
         double maxValue = 0;
-        int index=0;
+        int index = 0;
         for (int i = 0; i < inputArray.length; i++) {
             if (inputArray[i] > maxValue && available[i]) {
                 maxValue = inputArray[i];
-                index =i;
+                index = i;
             }
         }
         return index;
@@ -245,13 +255,13 @@ public class onlineBalancer {
 
 
     //Method for getting the minimum available value index
-    public int getMinIndex(double[] inputArray, boolean[] available){
+    public int getMinIndex(double[] inputArray, boolean[] available) {
         double minValue = 200;
-        int index=0;
+        int index = 0;
         for (int i = 0; i < inputArray.length; i++) {
             if (inputArray[i] < minValue && available[i]) {
                 minValue = inputArray[i];
-                index =i;
+                index = i;
             }
         }
         return index;

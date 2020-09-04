@@ -27,9 +27,57 @@ public class HotSpot {
         this.VERBOSE = VERBOSE;
     }
 
-
-
+    //MatEx Running
     public void run(String hotspot_config, String floorplan, String powertrace, String thermaltrace) {
+//        ./MatEx -c matex.config -f Alpha16.flp -p multicore2.ptrace -transient_file_block allTemp2.data
+        this.hotspot_config = " -c ";
+        this.floorplan = " -f ";
+        this.powertrace = " -p ";
+        this.steady_file = " -steady_file Alpha.steady";
+        this.model_type = " -model_type grid";
+        this.thermaltrace = " -transient_file_block ";
+        this.hotspot_config += hotspot_config;
+        this.floorplan += floorplan;
+        this.powertrace += powertrace;
+        this.thermaltrace += thermaltrace;
+        Process process =null;
+        String command = hotspot_path + this.hotspot_config + this.floorplan + this.powertrace + this.thermaltrace;
+        if (VERBOSE)System.out.println(command);
+        Runtime runtime = null;
+        try {
+            Instant start = Instant.now();
+            runtime = Runtime.getRuntime();
+            process = runtime.exec(command);
+            InputStream stderr = process.getInputStream();
+            InputStreamReader isr = new InputStreamReader(stderr);
+            BufferedReader br = new BufferedReader(isr);
+            String line = null;
+//            int i = 0;
+            while ((line = br.readLine()) != null) {
+                if (VERBOSE) System.out.println(line);
+                else {
+//                    System.out.print("Processing HotSpot : " +  progressbar(i) + "\r");
+//                    i++;
+                }
+            }
+//            if (!VERBOSE)System.out.println();
+
+
+            int exitVal = process.waitFor();
+            Instant finish = Instant.now();
+            long timeElapsed = Duration.between(start, finish).toMillis();
+            if (VERBOSE) System.out.println("[HotSpot Completed! -- Time Elapsed: " + timeElapsed +" ms]");
+            if (VERBOSE) System.out.println("Process exitValue: " + exitVal);
+            process.destroy();
+
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+    public void run_HS(String hotspot_config, String floorplan, String powertrace, String thermaltrace) {
         this.hotspot_config = " -c ";
         this.floorplan = " -f ";
         this.powertrace = " -p ";

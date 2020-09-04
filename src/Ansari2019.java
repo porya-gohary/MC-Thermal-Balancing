@@ -35,11 +35,11 @@ public class Ansari2019 {
     String pathSeparator = File.separator;
 
     //HotSpot location and information
-    String hotspot_path = "HotSpot" + pathSeparator + "hotspot";
-    String hotspot_config = "HotSpot" + pathSeparator + "configs" + pathSeparator;
-    String floorplan = "HotSpot" + pathSeparator + "floorplans" + pathSeparator;
-    String powertrace = "HotSpot" + pathSeparator + "powertrace" + pathSeparator;
-    String thermaltrace = "HotSpot" + pathSeparator + "thermaltrace" + pathSeparator + "thermal.ttrace";
+    String hotspot_path = "MatEx-1.0" + pathSeparator + "MatEx";
+    String hotspot_config = "MatEx-1.0" + pathSeparator + "configs" + pathSeparator;
+    String floorplan = "MatEx-1.0" + pathSeparator + "floorplans" + pathSeparator;
+    String powertrace = "MatEx-1.0" + pathSeparator + "powertrace" + pathSeparator;
+    String thermaltrace = "MatEx-1.0" + pathSeparator + "thermaltrace" + pathSeparator + "thermal.ttrace";
 
 
     public Ansari2019(int deadline, int n_core,double n, McDAG dag, String xml_name, double overrun_percent, boolean VERBOSE) {
@@ -354,23 +354,27 @@ public class Ansari2019 {
         double Max=0;
         double Avg=0;
 
-        hotspot_config = "HotSpot" + pathSeparator + "configs" + pathSeparator;
-        floorplan = "HotSpot" + pathSeparator + "floorplans" + pathSeparator;
-        powertrace = "HotSpot" + pathSeparator + "powertrace" + pathSeparator;
+//        hotspot_config = "HotSpot" + pathSeparator + "configs" + pathSeparator;
+        hotspot_config = "MatEx-1.0" + pathSeparator + "configs" + pathSeparator;
+        floorplan = "MatEx-1.0" + pathSeparator + "floorplans" + pathSeparator;
+        powertrace = "MatEx-1.0" + pathSeparator + "powertrace" + pathSeparator;
         HotSpot hotSpot = new HotSpot(hotspot_path, VERBOSE);
         HS_input_creator hs_input_creator = new HS_input_creator(cpu);
         try {
-            hs_input_creator.Save("HotSpot", "powertrace", "Alpha" + cpu.getN_Cores() + ".ptrace", cpu.Endtime(-1));
+//            hs_input_creator.Save_HS("HotSpot", "powertrace", "Alpha" + cpu.getN_Cores() + ".ptrace", cpu.Endtime(-1));
+            hs_input_creator.Save("MatEx-1.0", "powertrace", "Alpha" + cpu.getN_Cores() + ".ptrace", cpu.Endtime(-1));
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        hotspot_config += "hotspot_" + cpu.getN_Cores() + ".config";
+//        hotspot_config += "hotspot_" + cpu.getN_Cores() + ".config";
+        hotspot_config += "matex_" + cpu.getN_Cores() + ".config";
         floorplan += "Alpha" + cpu.getN_Cores() + ".flp";
         powertrace += "Alpha" + cpu.getN_Cores() + ".ptrace";
         hotSpot.run(hotspot_config, floorplan, powertrace, thermaltrace);
 
-        String mFolder = "HotSpot";
+//        String mFolder = "HotSpot";
+        String mFolder = "MatEx-1.0";
         String sFolder = "thermaltrace";
         String filename = "thermal.ttrace";
         File thermalFile = null;
@@ -385,8 +389,10 @@ public class Ansari2019 {
                 String data = Reader.nextLine();
                 String Sdatavalue[] = data.split("\t");
                 double value[] = new double[cpu.getN_Cores()];
-                for (int i = 0; i < cpu.getN_Cores(); i++) {
-                    value[i] = Double.parseDouble(Sdatavalue[i]);
+                int k=0;
+                for (int i = 1; i < cpu.getN_Cores()+1; i++) {
+                    value[k] = Double.parseDouble(Sdatavalue[i]);
+                    k++;
                 }
 
                 if(getMax(value)>Max) Max = getMax(value);
