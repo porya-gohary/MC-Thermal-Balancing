@@ -362,15 +362,17 @@ public class Ansari2019 {
         HS_input_creator hs_input_creator = new HS_input_creator(cpu);
         try {
 //            hs_input_creator.Save_HS("HotSpot", "powertrace", "Alpha" + cpu.getN_Cores() + ".ptrace", cpu.Endtime(-1));
-            hs_input_creator.Save("MatEx-1.0", "powertrace", "Alpha" + cpu.getN_Cores() + ".ptrace", cpu.Endtime(-1));
+            hs_input_creator.Save("MatEx-1.0", "powertrace", "A15_" + cpu.getN_Cores() + ".ptrace", cpu.Endtime(-1));
         } catch (IOException e) {
             e.printStackTrace();
         }
 
 //        hotspot_config += "hotspot_" + cpu.getN_Cores() + ".config";
         hotspot_config += "matex_" + cpu.getN_Cores() + ".config";
-        floorplan += "Alpha" + cpu.getN_Cores() + ".flp";
-        powertrace += "Alpha" + cpu.getN_Cores() + ".ptrace";
+        floorplan += "A15_" + cpu.getN_Cores() + ".flp";
+//        floorplan += "Alpha" + cpu.getN_Cores() + ".flp";
+        powertrace += "A15_" + cpu.getN_Cores() + ".ptrace";
+//        powertrace += "Alpha" + cpu.getN_Cores() + ".ptrace";
         hotSpot.run(hotspot_config, floorplan, powertrace, thermaltrace);
 
 //        String mFolder = "HotSpot";

@@ -1,7 +1,7 @@
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+
 /*******************************************************************************
  * Copyright © 2020 Pourya Gohari
  * Written by Pourya Gohari (Email: gohary@ce.sharif.edu)
@@ -42,7 +42,8 @@ public class HS_input_creator {
         //Add Power of each core
         for (int i = 0; i <= end; i++) {
             for (int j = 0; j < cpu.getN_Cores(); j++) {
-                String s = (j != cpu.getN_Cores() - 1) ? (cpu.get_power(j,i)/1.5) + "\t" : (cpu.get_power(j,i)/1.5) + "\n";
+//                String s = (j != cpu.getN_Cores() - 1) ? (cpu.get_power(j, i) / 1.5) + "\t" : (cpu.get_power(j, i) / 1.5) + "\n";
+                String s = (j != cpu.getN_Cores() - 1) ? (cpu.get_power(j, i)) + "\t" : (cpu.get_power(j, i) ) + "\n";
                 outputWriter.write(s);
             }
         }
@@ -65,10 +66,12 @@ public class HS_input_creator {
 
         //Add Power of each core
         for (int i = 0; i <= end; i++) {
-            s = i + "\t";
+            s = ((double)(i + 1)/1000) + "\t";
+//            s = (i + 1) + "\t";
             outputWriter.write(s);
             for (int j = 0; j < cpu.getN_Cores(); j++) {
-                s = (j != cpu.getN_Cores() - 1) ? (cpu.get_power(j,i)/1.5) + "\t" : (cpu.get_power(j,i)/1.5) + "\n";
+//                s = (j != cpu.getN_Cores() - 1) ? (cpu.get_power(j, i) / 1.5) + "\t" : (cpu.get_power(j, i) / 1.5) + "\n";
+                s = (j != cpu.getN_Cores() - 1) ? cpu.get_power(j, i) + "\t" : cpu.get_power(j, i)  + "\n";
                 outputWriter.write(s);
             }
         }

@@ -37,15 +37,16 @@ public class CPU {
     boolean VERBOSE = false;
 
     //Idle Power
-    double idle_power = 3;
+    double idle_power = 0.4;
 
 
     //Max. Freq.
-    int max_freq = 1200;
+    int max_freq = 2000;
 
     //Location of Power Trace
     String pathSeparator = File.separator;
-    String location = "Benchmark" + pathSeparator;
+//    String location = "Benchmark" + pathSeparator;
+    String location = "MiBench" + pathSeparator;
     //Number of Redundancy
     double n = 3;
 
@@ -135,8 +136,8 @@ public class CPU {
             }
         } catch (Exception e) {
             if (VERBOSE) System.err.println(Task + "  ⚠ ⚠ Infeasible!");
-            if (VERBOSE)  System.out.println("<!> Task "+Task+"  "+ Start+"  "+End);
-            if (VERBOSE)  System.out.println("<!!!> Deadline "+deadline);
+            if (VERBOSE) System.out.println("<!> Task " + Task + "  " + Start + "  " + End);
+            if (VERBOSE) System.out.println("<!!!> Deadline " + deadline);
             if (VERBOSE) e.printStackTrace();
             throw new Exception("Infeasible!");
             //System.exit(1);
@@ -231,23 +232,23 @@ public class CPU {
                 StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
                 //System.out.println(stackTraceElements[2].getClassName());
 
-                    //System.out.println(v.getName()+" <> "+HI+"    ### "+(v.getWcet(1)-v.getWcet(0)));
-                    Double r[] = new Double[v.getWcet(1) - v.getWcet(0)];
-                    BufferedReader reader;
-                    File file = new File(location + max_freq + "//" + HI + ".txt");
-                    reader = new BufferedReader(new FileReader(file));
-                    int i = 0;
-                    String line = reader.readLine();
-                    while (line != null) {
-                        r[i] = Double.parseDouble(line);
-                        line = reader.readLine();
-                        i++;
-                    }
-                    int l = 0;
-                    for (int k = Start; k < Start + r.length; k++) {
-                        power[Core][k] = r[l];
-                        l++;
-                    }
+                //System.out.println(v.getName()+" <> "+HI+"    ### "+(v.getWcet(1)-v.getWcet(0)));
+                Double r[] = new Double[v.getWcet(1) - v.getWcet(0)];
+                BufferedReader reader;
+                File file = new File(location + max_freq + "//" + HI + ".txt");
+                reader = new BufferedReader(new FileReader(file));
+                int i = 0;
+                String line = reader.readLine();
+                while (line != null) {
+                    r[i] = Double.parseDouble(line);
+                    line = reader.readLine();
+                    i++;
+                }
+                int l = 0;
+                for (int k = Start; k < Start + r.length; k++) {
+                    power[Core][k] = r[l];
+                    l++;
+                }
 
 //                System.out.println("P START  :: "+Start+"   "+(Start+r.length));
 //                System.out.println("<POWER> "+v.getName()+"  "+v.getHI_name()+"   "+(v.getWcet(1)-v.getWcet(0)));
@@ -305,9 +306,9 @@ public class CPU {
 
     //Return number of Core that in Use in specific Time
     public int max_core(int Time) {
-        int i=0;
+        int i = 0;
         for (int j = 0; j < n_Cores; j++) {
-            if(core[j][Time]!=null)i++;
+            if (core[j][Time] != null) i++;
         }
         return i;
     }
@@ -591,19 +592,41 @@ public class CPU {
         }
     }
 
+    public void emptyCores(int start, int end){
+        for (int i = start; i <= end; i++) {
+            for (int j = 0; j < getN_Cores(); j++) {
+                power[0][i] = idle_power;
+                core[0][i] = null;
+            }
+
+        }
+    }
+
+    //Remapping blocks between New and old cores
+    public void remapVer2(int source, int dist, int start, int end, CPU temp_cpu) {
+        double power_temp;
+        String task_temp;
+
+        for (int i = start; i <= end; i++) {
+            power[dist][i] = temp_cpu.power[source][i];
+            core[dist][i] = temp_cpu.core[source][i];
+
+        }
+    }
+
     //Worst-Fit mapping core function
-    public int worstFit(){
-        int min=deadline;
-        int index =0;
+    public int worstFit() {
+        int min = deadline;
+        int index = 0;
 
         for (int i = 0; i < n_Cores; i++) {
-            int temp=deadline;
+            int temp = deadline;
             for (int j = 0; j < deadline; j++) {
-                if (core[i][j]==null) temp--;
+                if (core[i][j] == null) temp--;
             }
-            if(temp<min){
-                min=temp;
-                index=i;
+            if (temp < min) {
+                min = temp;
+                index = i;
             }
         }
         return index;
