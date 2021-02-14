@@ -23,9 +23,9 @@ import static java.lang.Math.ceil;
 @SuppressWarnings("ALL")
 public class CPU {
     //Core of CPU   [#Core] [#Time]
-    private String[][] core;
+    public String[][] core;
     //Power Trace of Cores
-    private double[][] power;
+    public double[][] power;
     //Deadline of System
     private int deadline;
     //Number of Core in CPU
@@ -45,7 +45,7 @@ public class CPU {
 
     //Location of Power Trace
     String pathSeparator = File.separator;
-//    String location = "Benchmark" + pathSeparator;
+    //    String location = "Benchmark" + pathSeparator;
     String location = "MiBench" + pathSeparator;
     //Number of Redundancy
     double n = 3;
@@ -535,14 +535,24 @@ public class CPU {
     //Calculate Peak Power of CPU
     public double Peak_power() {
         double max = 0;
+        int ti = 0;
         double p = 0;
         for (int i = 0; i < deadline; i++) {
             p = 0;
             for (int j = 0; j < n_Cores; j++) {
                 p += power[j][i];
             }
-            if (p > max) max = p;
+            if (p > max) {
+                max = p;
+                ti = i;
+
+            }
         }
+//        System.out.println("|CPU MAX| " + ti);
+//        for (int j = 0; j < n_Cores; j++) {
+//            System.out.print(power[j][ti] + "\t");
+//        }
+//        System.out.println();
         return max;
     }
 
@@ -592,11 +602,11 @@ public class CPU {
         }
     }
 
-    public void emptyCores(int start, int end){
+    public void emptyCores(int start, int end) {
         for (int i = start; i <= end; i++) {
             for (int j = 0; j < getN_Cores(); j++) {
-                power[0][i] = idle_power;
-                core[0][i] = null;
+                power[j][i] = idle_power;
+                core[j][i] = null;
             }
 
         }
@@ -631,5 +641,6 @@ public class CPU {
         }
         return index;
     }
-
 }
+
+

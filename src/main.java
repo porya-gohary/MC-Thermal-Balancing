@@ -32,6 +32,7 @@ public class main {
     //Number of DAG
     static int n_DAGs = 10;
 
+
     public static void main(String[] args) throws Exception {
 
         // --> Command-line Args
@@ -69,7 +70,7 @@ public class main {
         }
 
         //Number of system cores
-        int n_core = 16;
+        int n_core = 36;
 
         //Graph Deadline
         int deadline;
@@ -101,7 +102,8 @@ public class main {
         Path temp;
 
 //        double percent[] = {0.0, 0.20, 0.40, 0.60, 0.80, 1.0};
-        double percent[] = {0.0};
+        double percent[] = {0.0, 0.50, 1.0};
+//        double percent[] = {0.0};
         double overrun_percent = 0.1;
         double fault_pecent = 0.0;
 

@@ -32,6 +32,16 @@ public class onlineBalancer {
 
     String pathSeparator = File.separator;
 
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_BLACK = "\u001B[30m";
+    public static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_GREEN = "\u001B[32m";
+    public static final String ANSI_YELLOW = "\u001B[33m";
+    public static final String ANSI_BLUE = "\u001B[34m";
+    public static final String ANSI_PURPLE = "\u001B[35m";
+    public static final String ANSI_CYAN = "\u001B[36m";
+    public static final String ANSI_WHITE = "\u001B[37m";
+
     //HotSpot location and information
     String hotspot_path = "MatEx-1.0" + pathSeparator + "MatEx";
     String hotspot_config = "MatEx-1.0" + pathSeparator + "configs" + pathSeparator;
@@ -49,6 +59,14 @@ public class onlineBalancer {
     public void run() {
         HotSpot hotSpot = new HotSpot(hotspot_path, VERBOSE);
         HS_input_creator hs_input_creator = new HS_input_creator(cpu);
+        CPU temp_cpu = null;
+        temp_cpu=new CPU(cpu.getDeadline(),cpu.getN_Cores(),cpu.mcDAG,false);
+        for (int i = 0; i < cpu.getDeadline() ; i++) {
+            for (int j = 0; j < cpu.getN_Cores(); j++) {
+                temp_cpu.core[j][i] = cpu.core[j][i];
+                temp_cpu.power[j][i]=cpu.power[j][i];
+            }
+        }
 
 
         for (int i = 0; i < bps.length - 1; i++) {
@@ -76,7 +94,7 @@ public class onlineBalancer {
             Arrays.fill(sw2, true);
             double pre[] = new double[cpu.getN_Cores()];
 
-            CPU temp_cpu = cpu;
+
 
             for (int j = 0; j < cpu.getN_Cores(); j++) {
 //                pre[j] = predict(j, bps[i], bps[i + 1] - 1, get_cur_temp(bps[i])[j]);
@@ -110,15 +128,17 @@ public class onlineBalancer {
                 sw[MaxBlock] = false;
 
                 if (VERBOSE) {
-                    System.out.println("-------------- SWITCH BP " + i + " -----------------");
+                    System.out.println(ANSI_RED+"-------------- SWITCH BP " + i + " -----------------");
+                    System.out.println("TIME : "+ bps[i]+"\t"+bps[i+1]);
                     System.out.println("BLOCK : " + pre[MaxBlock]);
 //                    System.out.println("Current Temp. = " + coreTemp[MaxCore]);
-                    System.out.println("Current Temp. = " + coreTemp[MinCore]);
+                    System.out.println("Current Temp. = " + coreTemp[MinCore]+ANSI_RESET);
                 }
-
+//                System.out.println(ANSI_PURPLE+"REMAP :: >> SOURCE: "+MaxBlock+"\t"+"DEST: "+MinCore);
 //                cpu.remapVer2(MaxBlock, MaxCore, bps[i], bps[i + 1],temp_cpu);
 
                 cpu.remapVer2(MaxBlock, MinCore, bps[i], bps[i + 1], temp_cpu);
+
 
             }
         }

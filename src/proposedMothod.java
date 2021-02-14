@@ -16,8 +16,17 @@ import java.util.*;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-public class proposedMothod {
 
+public class proposedMothod {
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_BLACK = "\u001B[30m";
+    public static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_GREEN = "\u001B[32m";
+    public static final String ANSI_YELLOW = "\u001B[33m";
+    public static final String ANSI_BLUE = "\u001B[34m";
+    public static final String ANSI_PURPLE = "\u001B[35m";
+    public static final String ANSI_CYAN = "\u001B[36m";
+    public static final String ANSI_WHITE = "\u001B[37m";
     Vertex v[];
     Set<Vertex> HIv;
     Vertex sorted_tasks[];
@@ -127,6 +136,7 @@ public class proposedMothod {
         cpu = new CPU(deadline, n_core, dag, n, max_freq_cores, VERBOSE);
         do {
             Task = get_tasks(true);
+//            System.out.println(ANSI_RED + "TASK SIZE => "+ Task.length + ANSI_RESET);
             if (VERBOSE) System.out.println("------M------");
             int startTime = (cpu.Endtime(-1) == 0) ? 0 : cpu.Endtime(-1) + 1;
             for (int i = 0; i < Task.length; i++) {
@@ -154,7 +164,7 @@ public class proposedMothod {
     //Get Tasks for every blocks
     public String[] get_tasks(boolean LO) {
         //Make array for tasks in specific blocks
-        String t[] = new String[n_core];
+        String t[] = new String[n_core/2];
         Vertex s = null;
         int k = 0;
         do {
